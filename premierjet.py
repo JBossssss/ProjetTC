@@ -6,8 +6,6 @@ Created on Wed Feb 22 18:33:13 2023
 """
 
 import streamlit as st
-import numpy as np
-import soundfile as sf
 import math as m
 
 st.title("Synthèse de filtres RCAO")
