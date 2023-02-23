@@ -4,7 +4,6 @@ Created on Thu Feb 23 15:05:48 2023
 
 @author: Loren
 """
-
 import streamlit as st # This must always be the first line of a streamlit app
 import numpy as np
 import matplotlib.pyplot as plt
