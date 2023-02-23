@@ -6,8 +6,7 @@ Created on Thu Feb 23 15:05:48 2023
 """
 
 import streamlit as st # This must always be the first line of a streamlit app
-from numpy import *
-from matplotlib.pyplot import * # Needed for plotting
+import numpy as np
 import matplotlib.pyplot as plt
 import soundfile # Needed for playing sounds
 import io # Needed for playing sounds
@@ -18,8 +17,8 @@ def st_audio(A, samplerate=44100):
     st.audio(byte_io)
 
     
-t=arange(-30,30,0.2)
-fig,ax = subplots(figsize=(15,5))
+t=np.arange(-30,30,0.2)
+fig,ax = plt.subplots(figsize=(15,5))
 st.title('Choose limit, test algorithm')
 st.subheader('Type')
 ch=st.radio('Choose filter type', ['Low pass', 'Band pass','Hight pass'])
@@ -30,14 +29,14 @@ if (ch=='Band pass'):
     st.subheader('Result')
     s1=w1*np.ones(t.size)
     s2=w2*np.ones(t.size) 
-    plot(s1,t)
-    plot(s2,t)
+    plt.plot(s1,t)
+    plt.plot(s2,t)
     st.pyplot(fig,ax)
 else :     
     w=st.slider('Choose frequency', 0, 10000)
     st.subheader('Result')
     s=w*np.ones(t.size) 
-    plot(s,t)
+    plt.plot(s,t)
     st.pyplot(fig,ax)
 
     
