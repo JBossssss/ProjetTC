@@ -7,7 +7,6 @@ Created on Wed Feb 22 18:33:13 2023
 
 import streamlit as st
 import math as m
-#from Utils_Projet import *
 
 st.title("Synthèse de filtres RCAO")
 
@@ -626,7 +625,6 @@ elif sel=='Réjecteur de fréquence de Flieghe (Q<30)':
                 st.write('**C2 =** ',C2,' Farads.')
                 st.write('**C7 =** ',C7,' Farads.')
             
-#draw_repfreq("bite",[1], [1], 0, 1)
 
             
 
