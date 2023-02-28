@@ -159,14 +159,14 @@ if sel =='HPMQ (Passe-Haut de Sallen-Key, Q<5)':
         st.write('Valeur de fp: ',fp,' Hertz.')
         qp=st.number_input('**Choix de Qp**',min_value=0.00,value=1.00,step=None)
         st.write('Valeur de Qp: ',qp)
-<<<<<<< HEAD
+        
         C2=st.number_input('Choix de C2',min_value=0.00,value=0.00000001,step=0.0000001)
         st.write('Valeur de C2: ',C2,' Farads.')
         C4=st.number_input('Choix de C4',min_value=0.00,value=0.00000001,step=0.0000001,format="%0.12f")
         st.write('Valeur de C4: ',C4,' Farads.')
         k=st.number_input('Choix de K (<=1)',min_value=0.00,max_value=1.00,value=0.50,step=None)
         st.write('Valeur de K: ',k)
-=======
+
         C11=st.number_input('**Choix de C11**',min_value=0.00,value=0.00001,step=None,format='%0.10f')
         st.write('Valeur de C11: ',C11,' Farads.')
         C12=st.number_input('**Choix de C12**',min_value=0.00,value=0.00001,step=None,format='%0.10f')
@@ -175,7 +175,6 @@ if sel =='HPMQ (Passe-Haut de Sallen-Key, Q<5)':
         st.write('Valeur de C3: ',C3,' Farads.')
         R5=st.number_input('**Choix de R5 (Optionnel)**',min_value=0.00,value=100.00,step=None)
         st.write('Valeur de R5: ',R5,' Ohms.')
->>>>>>> 8607317bcde2fd3743907318b0f846d47da4a7f1
         
         if st.checkbox('**Valider les données**:+1:',key=2):
             
