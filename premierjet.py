@@ -12,9 +12,10 @@ st.title("Synthèse de filtres RCAO")
 
 
 st.header("Choix du filtre")
-sel=st.selectbox("Avec quel type de filtre désirez-vous travailler?",['LPLQ (Low Pass Sallen-Key, Q<2)','HPLQ (High Pass Sallen-Key, Q<2)','LPMQ (Low Pass Sallen-Key, Q<5)','HPMQ (High Pass Sallen-Key, Q<5)'])
+sel=st.selectbox("Avec quel type de filtre désirez-vous travailler?",['LPLQ (Passe-Bas de Sallen-Key, Q<2)','HPLQ (Passe-Haut de Sallen-Key, Q<2)','LPMQ (Passe-Bas de Sallen-Key, Q<5)','HPMQ (Passe-Haut de Sallen-Key, Q<5)',
+                                                                      'BR-LPN-HPN-MQ (Réjecteur de fréquence de Sallen-Key (double T), Q<5)'])
 
-if sel =='LPLQ (Low Pass Sallen-Key, Q<2)':
+if sel =='LPLQ (Passe-Bas de Sallen-Key, Q<2)':
    
    st.image('iLP-LQ.jpg')
    if st.checkbox('**Choisir ce filtre**:+1:',key=1):
@@ -59,7 +60,7 @@ if sel =='LPLQ (Low Pass Sallen-Key, Q<2)':
                          
                            
       
-if sel =='HPLQ (High Pass Sallen-Key, Q<2)':
+if sel =='HPLQ (Passe-Haut de Sallen-Key, Q<2)':
    
     st.image('iHP-LQ.jpg')
     if st.checkbox('**Choisir ce filtre**:+1:',key=1):
@@ -94,7 +95,7 @@ if sel =='HPLQ (High Pass Sallen-Key, Q<2)':
                          
                             
     
-if sel =='LPMQ (Low Pass Sallen-Key, Q<5)':
+if sel =='LPMQ (Passe-Bas de Sallen-Key, Q<5)':
    
     st.image('iLP-MQ.jpg')
     if st.checkbox('**Choisir ce filtre**:+1:',key=1):
@@ -148,7 +149,7 @@ if sel =='LPMQ (Low Pass Sallen-Key, Q<5)':
                          
                             
     
-if sel =='HPMQ (High Pass Sallen-Key, Q<5)':
+if sel =='HPMQ (Passe-Haut de Sallen-Key, Q<5)':
    
     st.image('iHP-MQ.jpg')
     if st.checkbox('**Choisir ce filtre**:+1:',key=1):
@@ -197,9 +198,46 @@ if sel =='HPMQ (High Pass Sallen-Key, Q<5)':
             st.write('**R6 =** ',R6,' Ohms.')
             st.write('**GSP =** ',GSP)
 
+if sel =='BR-LPN-HPN-MQ (Réjecteur de fréquence de Sallen-Key (double T), Q<5)':
 
-
-
+    st.image('iBR-LPN-HPN-MQ.jpg')
+    if st.checkbox('**Choisir ce filtre**:+1:',key=1):
+    
+        st.header("Entrée des paramètres du filtre")
+        fp=st.number_input('**Choix de fp**',min_value=0.00,value=1000.00,step=None)
+        st.write('Valeur de fp: ',fp,' Hertz.')
+        qp=st.number_input('**Choix de Qp**',min_value=0.00,value=1.00,step=None)
+        st.write('Valeur de Qp: ',qp)
+        C11=st.number_input('**Choix de C11**',min_value=0.00,value=0.00001,step=None,format='%0.10f')
+        st.write('Valeur de C11: ',C11,' Farads.')
+        C12=st.number_input('**Choix de C12**',min_value=0.00,value=0.00001,step=None,format='%0.10f')
+        st.write('Valeur de C12: ',C12,' Farads.')
+        C3=st.number_input('**Choix de C3**',min_value=0.00,value=0.00000001,step=None,format='%0.10f')
+        st.write('Valeur de C3: ',C3,' Farads.')
+        R5=st.number_input('**Choix de R5 (Optionnel)**',min_value=0.00,value=100.00,step=None)
+        st.write('Valeur de R5: ',R5,' Ohms.')
+    
+        if st.checkbox('**Valider les données**:+1:',key=2):
+            
+            C1=C11+C12
+            P=(C1/C3)/(4*qp*qp)*(m.sqrt(1+12*qp*qp*(1+C3/C1))-1)*(m.sqrt(1+12*qp*qp*(1+C3/C1))-1)
+            
+            R2=1/(2*m.pi*fp*m.sqrt(P*C1*C3))
+            R4=P*R2
+            
+            if R5==0:
+                R5=1e4
+                
+            R6=R5*(1/P*(1+C1/C3)-m.sqrt(C1/(P*C3))/qp)
+            K=C11/C1*(1+R6/R5)
+            GSP=qp*(1+R6/R5)*(1+R6/R5)*m.sqrt((P*C3)/C1)
+            
+            
+            st.header('Données calculées:')
+            st.write('**R2 =** ',R2,' Ohms.')
+            st.write('**R4 =** ',R4,' Ohms.')
+            st.write('**R6 =** ',R6,' Ohms.')
+            st.write('**GSP =** ',GSP)
 
 
 

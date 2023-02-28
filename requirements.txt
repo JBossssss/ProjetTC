@@ -3,3 +3,4 @@ matplotlib
 soundfile 
 streamlit
 plotly
+math
