@@ -16,21 +16,26 @@ from matplotlib import rcParams
 import plotly
 
 
-def Param(TAB):
+def Param(TAB,maxq):
     RET=[]
     case = st.form(key="form_settings")
     expander = case.expander("Entrée des paramètres du filtre")
     col1, col2, col3 = expander.columns([1, 1, 1])
     for i in range(len(TAB)):
+        stp=1.00
         if TAB[i][0]=='f':
-            Name='**Choix de fp**'
-            maxv=1000.00
+            Name='**Choix de '
+            Name+=TAB[i]
+            Name+='**'
+            v=1000.00
+            maxv=None
             form=None
             unit='Hertz'
             c=col1
         elif  TAB[i][0]=='Q':
             Name='**Choix de Qp**'
-            maxv=1.00
+            v=1.00
+            maxv=float(maxq)
             form=None
             unit=''
             c=col1
@@ -38,7 +43,9 @@ def Param(TAB):
             Name='**Choix de '
             Name+=TAB[i]
             Name+='**'
-            maxv=0.00000001
+            v=0.0000000001
+            stp=0.000001
+            maxv=None
             form='%0.10f'
             unit='Farad'
             c=col2
@@ -46,7 +53,9 @@ def Param(TAB):
             Name='**Choix de '
             Name+=TAB[i]
             Name+='**'
-            maxv=0.5
+            v=0.5
+            stp=0.1
+            maxv=None
             form=None
             unit=''
             c=col3
@@ -54,14 +63,16 @@ def Param(TAB):
             Name='**Choix de '
             Name+=TAB[i]
             Name+='**'
-            maxv=1000.00
+            v=1000.00
+            maxv=None
             form=None
             unit='ohm'
             c=col3
         
-        RET.append(c.number_input(Name,min_value=0.00,value=maxv,step=None,format=form,key=i+50))
+        RET.append(c.number_input(Name,min_value=0.00,value=v,max_value=maxv,step=stp,format=form,key=i+50,))
         with case :
             st.write('Valeur de',TAB[i],': ',RET[i],unit)
+            
     case.form_submit_button('**Valider les données**:+1:')
   
     return RET
@@ -88,7 +99,9 @@ def Result(NAME,DATA,NUM,DEN):
                 Name+=' =**'
                 unit='ohm'
             else:
-                Name='**GSP**'
+                Name='**'
+                Name+=NAME[i]
+                Name+=' =**'
                 unit=''
             with res:    
                 st.write(Name,DATA[i], unit) 
@@ -105,7 +118,7 @@ def Result(NAME,DATA,NUM,DEN):
             w2=m.log10(m.sqrt(DEN[2]))-z-0.1
             draw_repfreq('Rep freq',NUM,DEN,w1,w2)
             zplane('P/Z',NUM,DEN,r=2.5)
-        res.form_submit_button('**Valider les données**:+1:')
+    res.form_submit_button('**Valider les données**:+1:')
 
     # with open(data, "rb") as file:
     #     dwl = st.download_button(
@@ -142,12 +155,12 @@ def getPB_ND(fp,qp,k):
     D.append(fp/qp)
     D.append(fp**2)
     return N,D
-def getCN_NB(fp,qp,k,fz):
+def getBR_ND(fp,qp,k,fz):
     N=[]
     D=[]
     N.append(k)
-    N.append(k*(fz**2))
     N.append(0)
+    N.append(k*(fz**2))
     D.append(1)
     D.append(fp/qp)
     D.append(fp**2)
@@ -192,8 +205,8 @@ def zplane(leg,num,den,r=2.5,filename=None):
     outputs : zéros, pôles, k (facteur multiplicatif)
 
     """
-    r=max(num[len(num)-1]/num[0],den[len(den)-1]/den[0])
-    r=r**2
+    r=max(num[len(num)-1]/(num[0]+0.0001),den[len(den)-1]/den[0])
+    r=m.sqrt(r)+0.05*m.sqrt(r)
     fig,ax = plt.subplots(figsize=(6,4))
     b = np.array(num)
     a = np.array(den)
@@ -237,9 +250,9 @@ def zplane(leg,num,den,r=2.5,filename=None):
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
 
-    # set the ticks
-    # plt.axis('scaled'); plt.axis([-1, 1, -1, 1])
-    # ticks = [-2*r,-1.5*r,-1*r,-0.5*r,0.5*r,1*r,1.5*r]; plt.xticks(ticks); plt.yticks(ticks)
+    plt.axis('scaled')
+    plt.axis([-r,r, -r, r])
+    #ticks = [-2*r,-1.5*r,-1*r,-0.5*r,0.5*r,1*r,1.5*r]; plt.xticks(ticks); plt.yticks(ticks)
 
     if filename is None:
         plt.title(leg)
