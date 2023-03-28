@@ -4,3 +4,4 @@ soundfile
 streamlit
 plotly
 math
+scipy
