@@ -18,7 +18,7 @@ st.header("Choix du filtre")
 sel=st.selectbox("Avec quel type de filtre désirez-vous travailler?",['LPLQ (Passe-bas de Sallen-Key, Q<2)','HPLQ (Passe-haut de Sallen-Key, Q<2)','LPMQ (Passe-bas de Sallen-Key, Q<5)','HPMQ (Passe-haut de Sallen-Key, Q<5)',
                                                                       'BR-LPN-HPN-MQ (Réjecteur de fréquence de Sallen-Key (double T), Q<5)','BPLQR (Passe-bande de Rauch (de type R), Q<2)','BPLQC (Passe-bande de Rauch (de type C), Q<2)',
                                                                       'BPMQR (Passe-bande de Rauch (de type R), Q<10)','BPMQC (Passe-bande de Rauch (de type C), Q<10)','Passe-bas de Flieghe (Q<30)','Passe-bande de Flieghe (Q<30)',
-                                                                      'Passe-haut de Flieghe (Q<30)','Réjecteur de fréquence de Flieghe (Q<30)','Passe-Bas de Tow-Thomas (Q<100)'])
+                                                                      'Passe-haut de Flieghe (Q<30)','Réjecteur de fréquence de Flieghe (Q<30)','Cellule Universelle de Tow-Thomas (Q<100)'])
 
 if sel =='LPLQ (Passe-bas de Sallen-Key, Q<2)':
    st.image('iLP-LQ.jpg')
@@ -327,10 +327,10 @@ elif sel=='Passe-haut de Flieghe (Q<30)':
         Result(['R1','R2','R4','R6','R8','C3','C7'], [R1,R2,R4,R6,R8,C3,C7],N,D)
 
 elif sel=='Réjecteur de fréquence de Flieghe (Q<30)':
-    
+   
     st.image('iHP-HQ.jpg')
     if st.checkbox('**Choisir ce filtre**:+1:',key=1):
-        
+       
         [fz,fp,qp,C]=Param(['fz','fp','Qp','C'],30)
         R_optimal=1/(2*m.pi*fp*C)
         R_optimal=int(R_optimal)
@@ -341,50 +341,76 @@ elif sel=='Réjecteur de fréquence de Flieghe (Q<30)':
         C7=C
         R3=Rd
         R1=Rd
-        R8=qp*R_optimal
-        if fz==fp or fz>fp:
-            st.markdown(':warning:**:red[ERREUR]**:warning: **Il faut que fz soit inférieur à fp** ')
-            
-        if fz<fp:
-            R4=R8*(1-((fz/fp)*(fz/fp)))
-            R5=(R_optimal*R_optimal)/R4 
-            fpr=2*m.pi*m.sqrt(R3/(R1*R4*R5*C2*C7))
-            qpr=(fpr*C7*R8)/(2*m.pi)
-            fzr=(fpr/(2*m.pi))*m.sqrt(1+R4/R8)
+        R8=qp*R_optimal    
+       
+        if fz>fp:
+            R4=R8*(((fz/fp)*(fz/fp))-1)
+            R5=(R_optimal*R_optimal)/R4
+            [R1,R3,R4,R5,R8,C2,C7]=Result(['R1','R3','R4','R5','R8','C2','C7'], [R1,R3,R4,R5,R8,C2,C7])
+            wpr=m.sqrt(R3/(R1*R4*R5*C2*C7))
+            qpr=wpr*C7*R8
+            wzrlpn=wpr*m.sqrt(1+R4/R8)
+            fpr=wpr/(2*m.pi)
+            fzr=wzrlpn/(2*m.pi)
             N,D=getBR_ND(fp, qp, 1, fz)
             n,d=getBR_ND(fpr, qpr, 1, fzr)
-            Result(['R1','R3','R4','R5','R8','C2','C7'], [R1,R3,R4,R5,R8,C2,C7],N,D,n,d)
+            Aff(N, D,n,d)
+        elif fz<fp:
+            R4=R8*(1-((fz/fp)*(fz/fp)))
+            R5=(R_optimal*R_optimal)/R4
+            [R1,R3,R4,R5,R8,C2,C7]= Result(['R1','R3','R4','R5','R8','C2','C7'], [R1,R3,R4,R5,R8,C2,C7])
+            wpr=m.sqrt(R3/(R1*R4*R5*C2*C7))
+            qpr=wpr*C7*R8
+            racinewzrhpn=1-(R1*R4)/(R3*R8)
+            if racinewzrhpn<0:
+                st.markdown(":warning:** Il faut que **$$$(R1*R4)/(R3*R8)<1$$$")
+            else:
+                wzrhpn=wpr*m.sqrt(racinewzrhpn)
+                fpr=wpr/(2*m.pi)
+                fzr=wzrhpn/(2*m.pi)
+                N,D=getBR_ND(fp, qp, 1, fz)
+                n,d=getBR_ND(fpr, qpr, 1, fzr)
+                Aff(N, D,n,d)
+        else:
+            st.markdown(":warning:** fz doit être différent de fp**")
         
-# elif sel=='Passe-Bas de Tow-Thomas (Q<100)':
+elif sel=='Cellule Universelle de Tow-Thomas (Q<100)':
     
-#     st.image('ane.png')
-#     if st.checkbox('**Choisir ce filtre**:+1:',key=1):
+    # st.image('ane.png')
+    if st.checkbox('**Choisir ce filtre**:+1:',key=1):
         
-#         [fp,qp,C9,C10]=Param(['fp','Qp','C9','C10'],100)
+        typ=st.selectbox("Quel est le type de section?",['Passe-Bas','Passe-Haut','Passe-Bande','Réjecteur de fréquence'])
+        if typ=='Passe-Bas':
+            [fp,qp,C9,C10]=Param(['fp','Qp','C9','C10'],100)
+            
+            R_optimal=1/(2*m.pi*fp*C9)
+            R_optimal=int(R_optimal)
+            minval=R_optimal-10
+            maxval=R_optimal+10
+            Rd=st.slider("Choix de Rd=R2=R3=R7 proche de R optimale calculée sur base de fp et C.",minval,maxval,R_optimal)
+            R2=Rd
+            R3=Rd
+            R7=Rd
+            R=Rd**3
+            wp=m.pi*2*fp
+            R8=(wp**2)*R*C10*C9
+            R1=qp*m.sqrt((R*C9*C10)/(R8))
+            
+            R4=float('inf')
+            R6=float('inf')
+            R5=(R6*R8)/R2
+            K=-R8/R6
+            fpr=2*m.pi*m.sqrt(R8/(R2*R3*R7*C9*C10))
+            qpr=R1*m.sqrt(R8*C9/(R2*R3*R7*C10))
+            N,D=getLP_ND(fp, qp, 1)
+            n,d=getLP_ND(fpr, qpr, K)
+            Result(['R1','R2','R3','R4','R5','R6','R7','R8'], [R1,R2,R3,R4,R5,R6,R7,R8],N,D,n,d)
         
-#         R_optimal=1/(2*m.pi*fp*C9)
-#         R_optimal=int(R_optimal)
-#         minval=R_optimal-10
-#         maxval=R_optimal+10
-#         Rd=st.slider("Choix de Rd=R2=R3=R7 proche de R optimale calculée sur base de fp et C.",minval,maxval,R_optimal)
-#         R2=Rd
-#         R3=Rd
-#         R7=Rd
-#         R=Rd**3
-#         wp=m.pi*2*fp
-#         R8=(wp**2)*R*C10*C9
-#         R1=qp*m.sqrt((R*C9*C10)/(R8))
-        
-#         R4=float('inf')
-#         R6=float('inf')
-#         R5=(R6*R8)/R2
-#         K=-R8/R6
-#         fpr=2*m.pi*m.sqrt(R8/(R2*R3*R7*C9*C10))
-#         qpr=R1*m.sqrt(R8*C9/(R2*R3*R7*C10))
-#         N,D=getLP_ND(fp, qp, 1)
-#         n,d=getLP_ND(fpr, qpr, K)
-#         Result(['R1','R2','R3','R4','R5','R6','R7','R8'], [R1,R2,R3,R4,R5,R6,R7,R8],N,D,n,d)
-
+        elif typ=='Passe-Haut':
+            
+        elif typ=='Passe-Bande':
+            
+        elif typ=='Réjecteur de fréquence':
 
             
 
