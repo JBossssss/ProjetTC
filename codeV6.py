@@ -10,6 +10,7 @@ Pouvoir augmenter le Qp dans tout les cas
 Pole et Zéro superposés
 Delyanis et friend 
 
+
 """
 from ProjUtilsV6 import *
 import streamlit as st
@@ -47,7 +48,7 @@ if sel =='LPLQ (Passe-bas de Sallen-Key, Q<2)':
                R12=R1/(1-k)
 
                [R11,R12,R3,GSP]= Result(['R11','R12','R3','GSP'], [R11,R12,R3,GSP])
-               [fp,qp,C2,C4,k],[R11,R12,R3,GSP]=normalisation(['fp','Qp','C2','C4','K (<1)'], [fp,qp,C2,C4,k],['R11','R12','R3','GSP'], [R11,R12,R3,GSP])
+               [fp,qp,C2,C4,k],[R11,R12,R3,GSP]=standardisation(['fp','Qp','C2','C4','K (<1)'], [fp,qp,C2,C4,k],['R11','R12','R3','GSP'], [R11,R12,R3,GSP])
                wp=m.sqrt(1/(R1*C2*R3*C4))
                fpr=wp/(2*m.pi)
                qpr=(m.sqrt((R3*C2)/(R1*C4)))/(1+R3/R1)
@@ -70,7 +71,7 @@ elif sel =='HPLQ (Passe-haut de Sallen-Key, Q<2)':
         K=(C11/C1)
 
         [C1,R2,R4,GSP,Kr]=Result(['C1','R2','R4','GSP','K'], [C1,R2,R4,GSP,K])
-        [fp,qp,C11,C12,C3],[C1,R2,R4,GSP,Kr]=normalisation(['fp','Qp','C11','C12','C3'], [fp,qp,C11,C12,C3], ['C1','R2','R4','GSP','K'], [C1,R2,R4,GSP,K])
+        [fp,qp,C11,C12,C3],[C1,R2,R4,GSP,Kr]=standardisation(['fp','Qp','C11','C12','C3'], [fp,qp,C11,C12,C3], ['C1','R2','R4','GSP','K'], [C1,R2,R4,GSP,K])
         wp=m.sqrt(1/(R2*C1*R4*C3))
         fpr=wp/(2*m.pi)
         qpr=(m.sqrt((R4*C1)/(R2*C3)))/(1+C1/C3)     
@@ -112,7 +113,7 @@ elif sel =='LPMQ (Passe-bas de Sallen-Key, Q<5)':
                 R11=K0/K*R1
                 R12=K0/(K0-K)*R1
             [R11,R12,R3,R6,GSP,kr]=Result(['R11','R12','R3','R6','GSP','K'], [R11,R12,R3,R6,GSP,K])
-            [fp,qp,C2,C4,k,R5], [R11,R12,R3,R6,GSP,kr]=normalisation(['fp','Qp','C2','C4','K','R5 '], [fp,qp,C2,C4,k,R5], ['R11','R12','R3','R6','GSP','K'], [R11,R12,R3,R6,GSP,K])
+            [fp,qp,C2,C4,k,R5], [R11,R12,R3,R6,GSP,kr]=standardisation(['fp','Qp','C2','C4','K','R5 '], [fp,qp,C2,C4,k,R5], ['R11','R12','R3','R6','GSP','K'], [R11,R12,R3,R6,GSP,K])
             wp=m.sqrt(1/(R1*C2*R3*C4))
             fpr=wp/(2*m.pi)
             qpr=(m.sqrt((R3*C2)/(R1*C4)))/(1+R3/R1-R6*C2/(R5*C4))
@@ -142,7 +143,7 @@ elif sel =='HPMQ (Passe-haut de Sallen-Key, Q<5)':
         
 
         [R2,R4,R6,GSP]=Result(['R2','R4','R6','GSP'], [R2,R4,R6,GSP])
-        [fp,qp,C11,C12,C3,R5],[R2,R4,R6,GSP]=normalisation(['fp','Qp','C11','C12','C3','R5'], [fp,qp,C11,C12,C3,R5], ['R2','R4','R6','GSP'], [R2,R4,R6,GSP])
+        [fp,qp,C11,C12,C3,R5],[R2,R4,R6,GSP]=standardisation(['fp','Qp','C11','C12','C3','R5'], [fp,qp,C11,C12,C3,R5], ['R2','R4','R6','GSP'], [R2,R4,R6,GSP])
         wp=m.sqrt(1/(R2*C1*R4*C3))
         fpr=wp/(2*m.pi)
         qpr=(m.sqrt((R4*C1)/(R2*C3)))/(1+C1/C3-R4*R6/(R5*R2))
@@ -203,7 +204,7 @@ elif sel =='BR-LPN-HPN-MQ (Réjecteur de fréquence de Sallen-Key (double T), Q<
                     
                 else :    
                     [R5,R6,R7,R8,R10,Kr,GSP]=Result(['R5','R6','R7','R8','R10','K','GSP'], [R5,R6,R7,R8,R10,K,GSP])
-                    [fz,fp,qp,C1,C2,C3,C4,R9],[R5,R6,R7,R8,R10,Kr,GSP]=normalisation(['fz','fp','Qp','C1','C2','C3','C4','R9'],  [fz,fp,qp,C1,C2,C3,C4,R9], ['R5','R6','R7','R8','R10','K','GSP'], [R5,R6,R7,R8,R10,K,GSP])
+                    [fz,fp,qp,C1,C2,C3,C4,R9],[R5,R6,R7,R8,R10,Kr,GSP]=standardisation(['fz','fp','Qp','C1','C2','C3','C4','R9'],  [fz,fp,qp,C1,C2,C3,C4,R9], ['R5','R6','R7','R8','R10','K','GSP'], [R5,R6,R7,R8,R10,K,GSP])
                     K=(1+(R10/R9))/(1+(C4/CS))
                     wz=m.sqrt(1/(R5*R5*CS*C3))
                     wp=wz*m.sqrt((1+RS/R8)/(1+C4/CS))
@@ -232,7 +233,7 @@ elif sel=='BPLQR (Passe-bande de Rauch (de type R), Q<2)':
             R12=float('inf')
             K=K0
             [R11,R4,Kr,GSP]= Result(['R11','R4','K','GSP'], [R11,R4,K,GSP])
-            [fp,qp,C2,C3,k],[R11,R4,Kr,GSP]=normalisation(['fp','Qp','C2','C3','K'], [fp,qp,C2,C3,k], ['R11','R4','K','GSP'], [R11,R4,K,GSP])
+            [fp,qp,C2,C3,k],[R11,R4,Kr,GSP]=standardisation(['fp','Qp','C2','C3','K'], [fp,qp,C2,C3,k], ['R11','R4','K','GSP'], [R11,R4,K,GSP])
             st.markdown(":red[R12 vaut l'infini ==> Circuit ouvert]")
             qpr=m.sqrt((R4*C2)/(R1*C3))/(1+C2/C3)
             wp=m.sqrt(1/(R1*C2*C3*R4))
@@ -245,7 +246,7 @@ elif sel=='BPLQR (Passe-bande de Rauch (de type R), Q<2)':
             R12=float('inf')
             K=K0
             [R11,R4,Kr,GSP]= Result(['R11','R4','K','GSP'], [R11,R4,K,GSP])
-            [fp,qp,C2,C3,k],[R11,R4,Kr,GSP]=normalisation(['fp','Qp','C2','C3','K'], [fp,qp,C2,C3,k], ['R11','R4','K','GSP'], [R11,R4,K,GSP])
+            [fp,qp,C2,C3,k],[R11,R4,Kr,GSP]=standardisation(['fp','Qp','C2','C3','K'], [fp,qp,C2,C3,k], ['R11','R4','K','GSP'], [R11,R4,K,GSP])
             st.markdown(":red[R12 vaut l'infini ==> Circuit ouvert]")
             qpr=m.sqrt((R4*C2)/(R1*C3))/(1+C2/C3)
             wp=m.sqrt(1/(R1*C2*C3*R4))
@@ -258,7 +259,7 @@ elif sel=='BPLQR (Passe-bande de Rauch (de type R), Q<2)':
             R11=(K0/k)*R1
             R12=(K0/(K0-k))*R1
             [R11,R12,R4,Kr,GSP]= Result(['R11','R12','R4','K','GSP'], [R11,R12,R4,K,GSP])
-            [fp,qp,C2,C3,k],[R11,R12,R4,K,GSP]=normalisation(['fp','Qp','C2','C3','K'], [fp,qp,C2,C3,k], ['R11','R12','R4','K','GSP'], [R11,R12,R4,K,GSP]) 
+            [fp,qp,C2,C3,k],[R11,R12,R4,K,GSP]=standardisation(['fp','Qp','C2','C3','K'], [fp,qp,C2,C3,k], ['R11','R12','R4','K','GSP'], [R11,R12,R4,K,GSP]) 
             qpr=m.sqrt((R4*C2)/(R1*C3))/(1+C2/C3)
             wp=m.sqrt(1/(R1*C2*C3*R4))
             fpr=wp/(2*m.pi)
@@ -281,7 +282,7 @@ elif sel=='BPLQC (Passe-bande de Rauch (de type C), Q<2)':
             K=C11*GSP/C1
 
             [R2,R3,Kr,GSP]=Result(['R2','R3','K','GSP'], [R2,R3,K,GSP])
-            [fp,qp,C11,C12,C4],[R2,R3,Kr,GSP]=normalisation(['fp','Qp','C11','C12','C4'], [fp,qp,C11,C12,C4], ['R2','R3','K','GSP'], [R2,R3,K,GSP])
+            [fp,qp,C11,C12,C4],[R2,R3,Kr,GSP]=standardisation(['fp','Qp','C11','C12','C4'], [fp,qp,C11,C12,C4], ['R2','R3','K','GSP'], [R2,R3,K,GSP])
             qpr=m.sqrt((R3*C1)/(R2*C4))/(1+R3/R2)
             wp=m.sqrt(1/(R2*C1*C4*R3))
             fpr=wp/(2*m.pi)
@@ -319,7 +320,7 @@ elif sel=='BPMQR (Passe-bande de Rauch (de type R), Q<10)':
             R11=K0/K*R1
             R12=K0/(K0-K)*R1
         [R11,R12,R4,R5,kr,P,GSP]= Result(['R11','R12','R4','R5','K','P','GSP'], [R11,R12,R4,R5,k,P,GSP])
-        [fp,qp,C2,C3,k,R6],[R11,R12,R4,R5,kr,P,GSP]=normalisation(['fp','Qp','C2','C3','K','R6 '], [fp,qp,C2,C3,k,R6],['R11','R12','R4','R5','K','P','GSP'], [R11,R12,R4,R5,k,P,GSP])
+        [fp,qp,C2,C3,k,R6],[R11,R12,R4,R5,kr,P,GSP]=standardisation(['fp','Qp','C2','C3','K','R6 '], [fp,qp,C2,C3,k,R6],['R11','R12','R4','R5','K','P','GSP'], [R11,R12,R4,R5,k,P,GSP])
         qpr=m.sqrt((R4*C2)/(R1*C3))/(1+C2/C3-R4*R5/(R1*R6))
         wp=m.sqrt(1/(R1*C2*C3*R4))
         fpr=wp/(2*m.pi)
@@ -344,7 +345,7 @@ elif sel=='BPMQC (Passe-bande de Rauch (de type C), Q<10)':
         GSP=qp*(1+R5/R6)*(1+R5/R6)*m.sqrt(C1/(P*C4))
          
         [R2,R3,R5,Kr,P,GSP]=Result(['R2','R3','R5','K','P','GSP'], [R2,R3,R5,K,P,GSP])
-        [fp,qp,C11,C12,C4,R6],[R2,R3,R5,Kr,P,GSP]=normalisation(['fp','Qp','C11','C12','C4','R6 '],  [fp,qp,C11,C12,C4,R6], ['R2','R3','R5','K','P','GSP'], [R2,R3,R5,K,P,GSP])
+        [fp,qp,C11,C12,C4,R6],[R2,R3,R5,Kr,P,GSP]=standardisation(['fp','Qp','C11','C12','C4','R6 '],  [fp,qp,C11,C12,C4,R6], ['R2','R3','R5','K','P','GSP'], [R2,R3,R5,K,P,GSP])
         qpr=m.sqrt((R3*C1)/(R2*C4))/(1+R3/R2-C1*R5/(C4*R6))
         wp=m.sqrt(1/(R2*C1*R3*C4))
         fpr=wp/(2*m.pi)
@@ -372,7 +373,7 @@ elif sel=='Passe-bas de Flieghe (Q<30)':
         k=fp*R1*C1    
         
         [R1,R2,R3,R6,R7,C1,C4]=Result(['R1','R2','R3','R6','R7','C1','C4'], [R1,R2,R3,R6,R7,C1,C4])
-        [fp,qp,C],[R1,R2,R3,R6,R7,C1,C4]=normalisation(['fp','Qp','C'], [fp,qp,C], ['R1','R2','R3','R6','R7','C1','C4'], [R1,R2,R3,R6,R7,C1,C4])
+        [fp,qp,C],[R1,R2,R3,R6,R7,C1,C4]=standardisation(['fp','Qp','C'], [fp,qp,C], ['R1','R2','R3','R6','R7','C1','C4'], [R1,R2,R3,R6,R7,C1,C4])
         Kr=1+R2/R6
         wp=m.sqrt(R6/(R2*R3*R7*C1*C4))
         qpr=wp*R1*C1
@@ -402,7 +403,7 @@ elif sel=='Passe-bande de Flieghe (Q<30)':
         K=1+R2/R6
         
         [R1,R2,R4,R6,R7,C3,C8]= Result(['R1','R2','R4','R6','R7','C3','C8'], [R1,R2,R4,R6,R7,C3,C8])
-        [fp,qp,C],[R1,R2,R4,R6,R7,C3,C8]=normalisation(['fp','Qp','C'], [fp,qp,C], ['R1','R2','R4','R6','R7','C3','C8'], [R1,R2,R4,R6,R7,C3,C8])
+        [fp,qp,C],[R1,R2,R4,R6,R7,C3,C8]=standardisation(['fp','Qp','C'], [fp,qp,C], ['R1','R2','R4','R6','R7','C3','C8'], [R1,R2,R4,R6,R7,C3,C8])
         Kr=1+R2/R6
         wp=m.sqrt(R2/(R1*R4*R6*C3*C8))
         qpr=wp*R7*C8
@@ -433,7 +434,7 @@ elif sel=='Passe-haut de Flieghe (Q<30)':
         K=1+R2/R6   
         
         [R1,R2,R4,R6,R8,C3,C7]=Result(['R1','R2','R4','R6','R8','C3','C7'], [R1,R2,R4,R6,R8,C3,C7])
-        [fp,qp,C],[R1,R2,R4,R6,R8,C3,C7]=normalisation(['fp','Qp','C'], [fp,qp,C], ['R1','R2','R4','R6','R8','C3','C7'], [R1,R2,R4,R6,R8,C3,C7])
+        [fp,qp,C],[R1,R2,R4,R6,R8,C3,C7]=standardisation(['fp','Qp','C'], [fp,qp,C], ['R1','R2','R4','R6','R8','C3','C7'], [R1,R2,R4,R6,R8,C3,C7])
         Kr=1+R2/R6
         wp=m.sqrt(R2/(R1*R4*R6*C3*C7))
         qpr=wp*R8*C7
@@ -475,7 +476,7 @@ elif sel=='Réjecteur de fréquence de Flieghe (Q<30)':
             R4=R8*(1-((fz/fp)*(fz/fp)))
             R5=(R_optimal*R_optimal)/R4
             [R1,R3,R4,R5,R8,C2,C7]= Result(['R1','R3','R4','R5','R8','C2','C7'], [R1,R3,R4,R5,R8,C2,C7])
-            [fz,fp,qp,C], [R1,R3,R4,R5,R8,C2,C7]=normalisation(['fz','fp','Qp','C'], [fz,fp,qp,C], ['R1','R3','R4','R5','R8','C2','C7'], [R1,R3,R4,R5,R8,C2,C7])
+            [fz,fp,qp,C], [R1,R3,R4,R5,R8,C2,C7]=standardisation(['fz','fp','Qp','C'], [fz,fp,qp,C], ['R1','R3','R4','R5','R8','C2','C7'], [R1,R3,R4,R5,R8,C2,C7])
             wpr=m.sqrt(R3/(R1*R4*R5*C2*C7))
             qpr=wpr*C7*R8
             racinewzrhpn=1-(R1*R4)/(R3*R8)
@@ -522,7 +523,7 @@ elif sel=='Cellule Universelle de Tow-Thomas (Q<100)':
             R5=Rd
             K3=R8/(R7*R3*R5*C9*C10)
             [R1,R2,R3,R5,R7,R8,C9,C10]=Result(['R1','R2','R3','R5','R7','R8'], [R1,R2,R3,R5,R7,R8,C9,C10])
-            [fp,qp,C],[R1,R2,R3,R5,R7,R8,C9,C10]=normalisation(['fp','Qp','C=C9=C10'], [fp,qp,C], ['R1','R2','R3','R5','R7','R8'], [R1,R2,R3,R5,R7,R8,C9,C10])
+            [fp,qp,C],[R1,R2,R3,R5,R7,R8,C9,C10]=standardisation(['fp','Qp','C=C9=C10'], [fp,qp,C], ['R1','R2','R3','R5','R7','R8'], [R1,R2,R3,R5,R7,R8,C9,C10])
             fpr=(m.sqrt(R8/(R2*R3*R7*C9*C10)))/(2*m.pi)
             qpr=R1*m.sqrt(R8*C9/(R2*R3*R7*C10))
             K3r=R8/(R7*R3*R5*C9*C10)
@@ -550,7 +551,7 @@ elif sel=='Cellule Universelle de Tow-Thomas (Q<100)':
             R6=Rd
             K1=-R8/R6
             [R1,R2,R3,R6,R7,R8,C9,C10]=Result(['R1','R2','R3','R6','R7','R8'], [R1,R2,R3,R6,R7,R8,C9,C10])
-            [fp,qp,C],[R1,R2,R3,R6,R7,R8,C9,C10]=normalisation(['fp','Qp','C=C9=C10'], [fp,qp,C], ['R1','R2','R3','R6','R7','R8'], [R1,R2,R3,R6,R7,R8,C9,C10])
+            [fp,qp,C],[R1,R2,R3,R6,R7,R8,C9,C10]=standardisation(['fp','Qp','C=C9=C10'], [fp,qp,C], ['R1','R2','R3','R6','R7','R8'], [R1,R2,R3,R6,R7,R8,C9,C10])
             fpr=(m.sqrt(R8/(R2*R3*R7*C9*C10)))/(2*m.pi)
             qpr=R1*m.sqrt(R8*C9/(R2*R3*R7*C10))
             K1r=-R8/R6
@@ -578,7 +579,7 @@ elif sel=='Cellule Universelle de Tow-Thomas (Q<100)':
             R4=Rd
             K2=R8/(C9*R7*R4)
             [R1,R2,R3,R4,R7,R8,C9,C10]=Result(['R1','R2','R3','R4','R7','R8'], [R1,R2,R3,R4,R7,R8,C9,C10])
-            [fp,qp,C],[R1,R2,R3,R4,R7,R8,C9,C10]=normalisation(['fp','Qp','C=C9=C10'], [fp,qp,C], ['R1','R2','R3','R4','R7','R8'], [R1,R2,R3,R4,R7,R8,C9,C10])
+            [fp,qp,C],[R1,R2,R3,R4,R7,R8,C9,C10]=standardisation(['fp','Qp','C=C9=C10'], [fp,qp,C], ['R1','R2','R3','R4','R7','R8'], [R1,R2,R3,R4,R7,R8,C9,C10])
             fpr=(m.sqrt(R8/(R2*R3*R7*C9*C10)))/(2*m.pi)
             qpr=R1*m.sqrt(R8*C9/(R2*R3*R7*C10))
             K2r=R8/(C9*R7*R4)
@@ -607,7 +608,7 @@ elif sel=='Cellule Universelle de Tow-Thomas (Q<100)':
                 R5=R6/(((2*m.pi*fz)**2)*R3*R7*C9*C10)
                 K=-R8/R6
                 [R1,R2,R3,R4,R5,R6,R7,R8,C9,C10,Kr]=Result(['R1','R2','R3','R4','R5','R6','R7','R8','K'], [R1,R2,R3,R4,R5,R6,R7,R8,C9,C10,K])
-                [fp,fz,qp,C],[R1,R2,R3,R4,R5,R6,R7,R8,C9,C10,Kr]=normalisation(['fp','fz','Qp','C=C9=C10'], [fp,fz,qp,C], ['R1','R2','R3','R4','R5','R6','R7','R8','K'], [R1,R2,R3,R4,R5,R6,R7,R8,C9,C10,K])
+                [fp,fz,qp,C],[R1,R2,R3,R4,R5,R6,R7,R8,C9,C10,Kr]=standardisation(['fp','fz','Qp','C=C9=C10'], [fp,fz,qp,C], ['R1','R2','R3','R4','R5','R6','R7','R8','K'], [R1,R2,R3,R4,R5,R6,R7,R8,C9,C10,K])
                 fpr=(m.sqrt(R8/(R2*R3*R7*C9*C10)))/(2*m.pi)
                 qpr=R1*m.sqrt(R8*C9/(R2*R3*R7*C10))
                 fzr=(m.sqrt(R6/(R3*R5*R7*C9*C10)))/(2*m.pi)
