@@ -66,7 +66,7 @@ def Param(TAB,maxq,maxk=None):
             stp=0.000001
             maxv=None
             form='%0.10f'
-            unit='Farad'
+            unit='Farads'
             c=col2
         elif  TAB[i][0]=='K':
             Name='**Choix de '
@@ -86,7 +86,7 @@ def Param(TAB,maxq,maxk=None):
             v=1000.00
             maxv=None
             form=None
-            unit='ohm'
+            unit='Ohms'
             c=col3
         with c2:    
             RET.append(c.number_input(Name,min_value=0.00,value=v,step=stp,format=form,key=i+50))
@@ -111,16 +111,25 @@ def Result(NAME,DATA):
     with open(data, 'w') as file:
         for i in range(len(NAME)):
             with col2:
-                with modif:
-                    f=i%3
-                    if f==0: DATA[i]=d1.number_input(NAME[i],min_value=0.00,value=float(DATA[i]),format='%0.4f',step=0.01*DATA[i],key=i+20)
-                    elif f==1 :DATA[i]=d2.number_input(NAME[i],min_value=0.00,value=float(DATA[i]),format='%0.4f',step=0.01*DATA[i],key=i+20)
-                    else:DATA[i]=d3.number_input(NAME[i],min_value=0.00,value=float(DATA[i]),format='%0.4f',step=0.01*DATA[i],key=i+20)
+                if  NAME[i][0]=='K':
+                    pass
+                elif NAME[i][0]=='C':
+                    with modif:
+                        f=i%3
+                        if f==0: DATA[i]=d1.number_input(NAME[i],min_value=0.00,value=float(DATA[i]),format='%0.11f',step=0.01*DATA[i],key=i+20)
+                        elif f==1 :DATA[i]=d2.number_input(NAME[i],min_value=0.00,value=float(DATA[i]),format='%0.11f',step=0.01*DATA[i],key=i+20)
+                        else:DATA[i]=d3.number_input(NAME[i],min_value=0.00,value=float(DATA[i]),format='%0.11f',step=0.01*DATA[i],key=i+20)
+                else:
+                    with modif:
+                        f=i%3
+                        if f==0: DATA[i]=d1.number_input(NAME[i],min_value=0.00,value=float(DATA[i]),format='%0.2f',step=0.01*DATA[i],key=i+20)
+                        elif f==1 :DATA[i]=d2.number_input(NAME[i],min_value=0.00,value=float(DATA[i]),format='%0.2f',step=0.01*DATA[i],key=i+20)
+                        else:DATA[i]=d3.number_input(NAME[i],min_value=0.00,value=float(DATA[i]),format='%0.2f',step=0.01*DATA[i],key=i+20)
             if NAME[i][0]=='C':
                 Name='**'
                 Name+=NAME[i]
                 Name+=' =**'
-                unit='Farad'
+                unit='Farads'
             elif  NAME[i][0]=='K':
                 Name='**'
                 Name+=NAME[i]
@@ -130,7 +139,7 @@ def Result(NAME,DATA):
                 Name='**'
                 Name+=NAME[i]
                 Name+=' =**'
-                unit='ohm'
+                unit='Ohms'
             else:
                 Name='**'
                 Name+=NAME[i]
@@ -142,48 +151,6 @@ def Result(NAME,DATA):
                 #file.write(DATA[i])
                 file.write(unit)
     return DATA
-def standardisation(Name1,dat1,Name2,dat2):
-    if st.checkbox('**Standardiser les composants**',key=Name1):
-        with st.sidebar:
-            # d0,d1,d2,d3=st.columns([2,2,2,3])        
-            # with d1:     
-            st.markdown('**Résistances**')
-            series1=st.radio('Choissisez votre série de standadisation (précision) :',['E12 (+10%)','E24 (+-5%)','E48 (+-2%)'],key=80)
-            # st.form_submit_button('Valider')
-            dat1,dat2=cp_norm(Name1,dat1,Name2,dat2,'R',series1)
-            tab11,tab12=st.columns([1,2])           
-            for i in range(len(Name1)):
-                if Name1[i][0]=='R':
-                    tab11.write(Name1[i])
-                    tab12.write(dat1[i],format='%0.2f')   
-            for i in range(len(Name2)):
-                if Name2[i][0]=='R':
-                    tab11.write(Name2[i])
-                    tab12.write(dat2[i],format='%0.2f')
-                    
-            # with d2:    
-            
-            st.markdown('**Capacités**')
-            series2=st.radio('Choissisez votre série de standadisation (précision) :',['E12 (+20%)','E24 (+-10%)','E48 (+-5%)'],key=95)
-            dat1,dat2=cp_norm(Name1,dat1,Name2,dat2,'C',series2)
-            #st.form_submit_button('Valider') 
-            tab21,tab22=st.columns([1,2])            
-            for i in range(len(Name1)):
-                if Name1[i][0]=='C':
-                    tab21.write(Name1[i])
-                    tab22.write(dat1[i],format='%0.6f')
-            for i in range(len(Name2)):
-                if Name2[i][0]=='C':
-                    tab21.write(Name2[i])
-                    tab22.write(dat2[i],format='%0.6f')   
-            # with d3:
-            st.write('')
-            st.caption("E12: circuits audio,vidéo et de puissance")
-            st.caption("E24: applications de précision (instruments de mesure, les circuits de commande de précision et les amplificateurs audio de haute qualité)\n")
-            st.caption("E48: applications de précision extrême (telles que les oscillateurs, les filtres actifs et les circuits de traitement du signal)")
-                     
-    return dat1,dat2
-
 
 def Aff(N,D,n=None,d=None):
     st.header('Fonction de transfert et réponse fréquentielle') 
@@ -199,6 +166,7 @@ def Aff(N,D,n=None,d=None):
         draw_supp(N, D, n, d, w1, w2)
     with b:
         zplanesupp('', N, D, n, d)
+    
 def Write_fnT(N,D):
     N_str=''
     D_str=''
@@ -300,14 +268,14 @@ def draw_supp(num, den,N,D,w_min, w_max):
     wOut, hOut = sc.freqs(num, den, wIn)
     w2,h2=sc.freqs(N, D,wIn)
     
-    plt.semilogx(wOut, 20*np.log10(np.abs(hOut)),color=[0.5,0,0.5])
-    plt.semilogx(w2,20*np.log10(np.abs(h2)),color=[1,0.5,0])
+    plt.semilogx(wOut/(2*m.pi), 20*np.log10(np.abs(hOut)),color=[0.5,0,0.5])
+    plt.semilogx(w2/(2*m.pi),20*np.log10(np.abs(h2)),color=[1,0.5,0])
     plt.xlabel('Fréquence [Hz]')
     plt.ylabel('Amplitude [dB]')
     plt.legend(['Courbe Théorique','Courbe Réelle'])
     plt.show()
     st.pyplot(fig,ax)
-
+    
 def zplane(leg,num,den,r=2.5,filename=None):
 
     """Plot the complex z-plane given a transfer function.
@@ -514,7 +482,7 @@ def save_side(sel,Ld,Wd,Lt,Wt,p):
                 Name='**'
                 Name+=Ld[i]
                 Name+=' =**'
-                unit='Farad'
+                unit='Farads'
             elif  Ld[i][0]=='K':
                 Name='**'
                 Name+=Ld[i]
@@ -524,12 +492,12 @@ def save_side(sel,Ld,Wd,Lt,Wt,p):
                 Name='**'
                 Name+=Ld[i]
                 Name+=' =**'
-                unit='ohm'
+                unit='Ohms'
             elif   Ld[i][0]=='f':
                 Name='**'
                 Name+=Ld[i]
                 Name+=' =**'
-                unit='hertz'
+                unit='Hertz'
             else:
                 Name='**'
                 Name+=Ld[i]
@@ -542,7 +510,7 @@ def save_side(sel,Ld,Wd,Lt,Wt,p):
                 Name='**'
                 Name+=Lt[i]
                 Name+=' =**'
-                unit='Farad'
+                unit='Farads'
             elif  Lt[i][0]=='K':
                 Name='**'
                 Name+=Lt[i]
@@ -552,7 +520,7 @@ def save_side(sel,Ld,Wd,Lt,Wt,p):
                 Name='**'
                 Name+=Lt[i]
                 Name+=' =**'
-                unit='ohm'
+                unit='Ohms'
             else:
                 Name='**'
                 Name+=Lt[i]
@@ -563,131 +531,130 @@ def save_side(sel,Ld,Wd,Lt,Wt,p):
     return p
 
 
+def standardisation(Name1,dat1,Name2,dat2):
+    if st.checkbox('**Standardiser les composants**',key=Name1):
+            #with st.sidebar:
+            d0,d1,d2,d3=st.columns([2,2,2,3])        
+            with d1:    
+                st.markdown('**Résistances**')
+                series1=st.radio('Choissisez votre série de standadisation (précision) :',['E24 (+-5%)','E48 (+-2%)','E96 (+-1%)'],key=80)
+           
+                dat1,dat2=cp_norm(Name1,dat1,Name2,dat2,'R',series1)
+                tab11,tab12=st.columns([1,2])          
+                for i in range(len(Name1)):
+                    if Name1[i][0]=='R':
+                        tab11.write(Name1[i])
+                        tab12.write(dat1[i],format="%0.2f")  
+                for i in range(len(Name2)):
+                    if Name2[i][0]=='R':
+                        tab11.write(Name2[i])
+                        tab12.write(dat2[i],format="%0.2f")
+                   
+            with d2:    
+           
+                st.markdown('**Capacités**')
+                series2=st.radio('Choissisez votre série de standadisation (précision) :',['E24 (+-10%)','E48 (+-5%)','E96 (+-2%)'],key=95)
+                dat1,dat2=cp_norm(Name1,dat1,Name2,dat2,'C',series2)
+                #st.form_submit_button('Valider')
+                tab21,tab22=st.columns([1,2])            
+                for i in range(len(Name1)):
+                    if Name1[i][0]=='C':
+                        tab21.write(Name1[i])
+                        tab22.write(dat1[i],format="%0.2f")
+                for i in range(len(Name2)):
+                    if Name2[i][0]=='C':
+                        tab21.write(Name2[i])
+                        tab22.write(dat2[i],format="%0.2f")
+    return dat1,dat2
+
 def cp_norm(name1, dat1, name2, dat2, typ,series):
 
-    dat1 = list(dat1)
-    dat2 = list(dat2)
     for i in range(len(name1)):
         if name1[i][0] == typ:
             if typ=='R':
-                dat1[i] = standardize_resistor(dat1[i], series)
+                dat1[i] = standardize(dat1[i], series,'R')
             if typ=='C':
-                dat1[i] = standardize_capacitor(dat1[i], series)
+                dat1[i] = standardize(dat1[i], series,'C')
     for i in range(len(name2)):
         if name2[i][0] == typ:
             if typ=='R':
-                dat2[i] = standardize_resistor(dat2[i], series)
+                dat2[i] = standardize(dat2[i], series,'R')
             if typ=='C':
-                dat2[i] = standardize_capacitor(dat2[i], series)
-    return tuple(dat1), tuple(dat2)
-
-def standardize_resistor(r, series):
-    """Standardize a resistor value using a given E-series.
-    
-    Args:
-        r (float): the resistor value to be standardized, in ohms
-        series (str): the E-series to use. Default is 'E24'.
-    
-    Returns:
-        float: the standardized resistor value, in ohms
-        
-    """
-    E12_VALUES = [10, 12, 15, 18, 22, 27, 33, 39, 47, 56, 68, 82]
-    E24_VALUES = [10, 11, 12, 13, 15, 16, 18, 20, 22, 24, 27, 30, 33, 36, 39, 43, 47, 51, 56, 62, 68, 75, 82, 91]
-    E48_VALUES = [10, 10.2, 10.5, 10.7, 11, 11.3, 11.5, 12, 12.1, 12.4, 12.7, 13, 13.3, 13.7, 14, 14.3,
-                      15, 15.4, 15.8, 16.2, 16.5, 17, 17.4, 18, 18.2, 18.7, 19.1, 19.6, 20, 20.5, 21, 21.5, 22, 
-                      22.6, 23.2, 23.7, 24.3, 24.9, 25.5, 26.1, 27, 27.4, 28.7, 29.4, 30.1, 30.9, 31.6, 32.4, 33, 33.2,
-                      34.8, 35.7, 36.5, 37.4, 38.3, 39, 39.2, 40.2, 41.2, 42.2, 43.2, 44.2, 45.3, 46.4, 47.5, 48.7, 49.9,
-                      51.1, 52.3, 53.6, 54.9, 56.2, 57.6, 59, 60.4, 61.9, 63.4, 64.9, 66.5, 68.1, 69.8, 71.5, 73.2, 75, 76.8, 
-                      78.7, 80.6, 82.5, 84.5, 86.6, 88.7, 90.9, 93.1, 95.3, 97.6]
-    # Define the chosen E-series
-    if series[:3] == 'E12':
-        values = E12_VALUES
-    elif series[:3] == 'E24':
-        values = E24_VALUES
-    elif series[:3] == 'E48':
-        values = E48_VALUES
-    else:
-        raise ValueError("Invalid E-series")
-    i=0
-    j=0
-    while(r<9.85):
-        r=r*10
-        i=i-1
-    while(r>96.86):
-        r=r/10
-        j=j+1
-            
-    # Find the nearest standard value in the E-series
-    closest_value = min(values, key=lambda x: abs(x-r))
-    
-    # Calculate the normalized value
-    normalized_value = r / closest_value
-    
-    # Choose the normalized value closest to 1.0
-    normalized_values = [1.0]
-    normalized_values.extend([i/10 for i in range(2, 10)])
-    normalized_values.extend([i/100 for i in range(10, 100, 10)])
-    normalized_values.extend([i/1000 for i in range(100, 1000, 100)])
-    normalized_values.extend([i/10000 for i in range(1000, 10000, 1000)])
-    closest_normalized_value = min(normalized_values, key=lambda x: abs(x-normalized_value))
-    
-    # Calculate the standardized value
-    standardized_value = closest_value * closest_normalized_value*10**j*10**i
-    
-    return standardized_value
-
-def standardize_capacitor(c, series):
-    """Standardize a capacitor value using a given E-series.
-    
-    Args:
-        c (float): the capacitor value to be standardized, in farads
-        series (str): the E-series to use. Default is 'E6'.
-    
-    Returns:
-        float: the standardized capacitor value, in farads
-    """
-    E12_VALUES = [100, 120, 150, 180, 220, 270, 330, 390, 470, 560, 680, 820]
+                dat2[i] = standardize(dat2[i], series,'C')
+    return dat1,dat2
+   
+def standardize(c, series,typ):
+   
+    if typ=='R':
+        vmax=1e7
+        vmin=1
+    elif typ=='C':
+        vmax=10
+        vmin=1e-13
+       
     E24_VALUES = [100, 110, 120, 130, 150, 160, 180, 200, 220, 240, 270, 300, 330, 360, 390, 430, 470, 510, 560, 620, 680, 750, 820, 910]
-    E48_VALUES = [100, 105, 110, 115, 121, 127, 133, 140, 147, 154, 162, 169, 178, 187, 196, 205, 215, 226, 237, 249, 261, 274, 287, 301,
-                              316, 332, 348, 365, 383, 402, 422, 442, 464, 487, 511, 536, 562, 590, 619, 649, 681, 715, 750, 787, 825, 866, 909]
-    # Define the chosen E-series
-    
-    if series[:3] == 'E12':
-        values = E12_VALUES
+    E48_VALUES = [ 100, 105, 110, 115, 121, 127, 133, 140, 147, 154, 162, 169, 178, 187, 196, 205, 215, 226, 237, 249, 261, 274, 287, 301, 316, 332, 348, 365, 383, 402, 422, 442, 464, 487, 511, 536, 562, 590, 619, 649, 681, 715, 750, 787, 825, 866, 909, 953 ]
+    E96_VALUES = [100, 102, 105, 107, 110, 113, 115, 118, 121, 124, 127, 130, 133, 137, 140, 143, 147, 150, 154, 158, 162, 165, 169, 174, 178, 182, 187,
+           191, 196, 200, 205, 210, 215, 221, 226, 232, 237, 243, 249, 255, 261, 267, 274, 280, 287, 294, 301, 309, 316, 324, 332, 340, 348, 357,
+           365, 374, 383, 392, 402, 412, 422, 432, 442, 453, 464, 475, 487, 499, 511, 523, 536, 549, 562, 576, 590, 604, 619, 634, 649, 665, 681,
+           698, 715, 732, 750, 768, 787, 806, 825, 845, 866, 887, 909, 931, 953, 976]
+
+   
+    if series[:3] == 'E96':
+        values = E96_VALUES
     elif series[:3] == 'E24':
         values = E24_VALUES
     elif series[:3] == 'E48':
         values = E48_VALUES
     else:
         raise ValueError("Invalid E-series")
-    i=0
-    j=0
-    while(c<95):
-        c=c*10
-        i=i-1
-    while(c>960):
-        c=c/10
-        j=j+1
-
-    # Find the nearest standard value in the E-series
-    closest_value = min(values, key=lambda x: abs(x-c))
-    
-    # Calculate the normalized value
-    normalized_value = c / closest_value
-    
-    # Choose the normalized value closest to 1.0
-    normalized_values = [1.0]
-    normalized_values.extend([i/10 for i in range(2, 10, 2)])
-    closest_normalized_value = min(normalized_values, key=lambda x: abs(x-normalized_value))
-    
-    # Calculate the standardized value
-    standardized_value = closest_value * closest_normalized_value*10**j*10**i
-    
+   
+    if c<vmin:
+        standardized_value=vmin
+    elif c>vmax:
+        standardized_value=vmax
+    else:
+        i=0
+        j=0
+        while(c<985):
+            c=c*10
+            i=i-1
+        while(c>976):
+            c=c/10
+            j=j+1
+   
+        index = np.abs(np.asarray(values) - c).argmin()
+       
+        # Calculate the standardized value
+        standardized_value = values[index]*(10**(j+i))      
     return standardized_value
-
 
 def warning(leg):
     c1,c2=st.columns([1,20])
     c1.write(':warning:')
     c2.markdown(f'<p style="color:red">{leg}</p>', unsafe_allow_html=True) 
+
+
+def draw_sensi(nom,N,D,num,den,fp,variation):
+    fig,ax = plt.subplots(figsize=(10,5))
+    
+    # plt.figure()
+    num = np.array(num) 
+    den = np.array(den)
+    N=np.array(N)
+    D=np.array(D)
+    dfc=4*m.pi*fp
+    wIn = np.linspace(0, dfc, 100)
+    wOut, hOut = sc.freqs(num, den, wIn)
+    wbase, hbase = sc.freqs(N, D, wIn)
+    wIn = np.linspace(0, 2, 100)
+    hsensi=[]
+    for i in range(len(wIn)):
+        h3=((np.abs(hOut[i])-np.abs(hbase[i]))*100)/(variation*np.abs(hbase[i]))
+        hsensi.append(h3)
+    plt.plot(wIn, hsensi,color=[0.5,0,0.5])
+    plt.xlabel('Fréquence normalisée [Hz] (1==fp)')
+    plt.ylabel(nom)
+    plt.legend(['Courbe de sensibilité'])
+    plt.show()
+    st.pyplot(fig,ax)
