@@ -4,8 +4,8 @@ Created on Tue Apr 18 14:03:01 2023
 
 @author: Loren
 """
-from CodeV7 import *
-from ProjUtilsV7 import *
+from CodeV8 import *
+from ProjUtilsV8 import *
 import streamlit as st
 
 
