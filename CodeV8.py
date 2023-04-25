@@ -671,55 +671,107 @@ def filter(p):
             K0=(qp*qp)*(1+(C3/C2))
             GSP=K0
             
-            if k==0:
+            if k==0.00:
                 R11=R1
-                R12=float('inf')
+                R12=1e12
                 K=K0
-                [R11m,R4m,C2m,C3m,Km,GSPm]= Result(['R11','R4','C2','C3','K','GSP'], [R11,R4,C2,C3,K,GSP],p+80)
-                [C2m,C3m], [R11m,R4m]=standardisation(['C2','C3'], [C2m,C3m], ['R11','R4'], [R11m,R4m],p+80)
-                st.markdown(":red[R12 vaut l'infini ==> Circuit ouvert]")
-                Km=(qp*qp)*(1+(C3m/C2m))
-                qpr=m.sqrt((R4m*C2m)/(R11m*C3m))/(1+C2m/C3m)
-                wp=m.sqrt(1/(R11m*C2m*C3m*R4m))  
-                fpr=wp/(2*m.pi)
-                n,d=getPB_ND(fpr, qpr, Km)
-                N,D=getPB_ND(fp, qp, K)
-                Aff(N, D,n,d,p)
-                name=['fp','Qp','R11','R4','C2','C3','GSP']
-                data=[fpr,qpr, R11m,R4m,C2m,C3m,GSPm]
-            if (K0-k)<=0 :
+                
+            elif (K0-k)<=0.00 :
                 R11=R1
-                R12=float('inf')
+                R12=1e12
                 K=K0
-                [R11m,R4m,C2m,C3m,Km,GSPm]= Result(['R11','R4','C2','C3','K','GSP'], [R11,R4,C2,C3,K,GSP],p+80)
-                [C2m,C3m], [R11m,R4m]=standardisation(['C2','C3'], [C2m,C3m], ['R11','R4'], [R11m,R4m],p+80)
-                st.markdown(":red[R12 vaut l'infini ==> Circuit ouvert]")
-                Km=(qp*qp)*(1+(C3m/C2m))
-                qpr=m.sqrt((R4m*C2m)/(R11m*C3m))/(1+C2m/C3m)
-                wp=m.sqrt(1/(R11m*C2m*C3m*R4m))
-                fpr=wp/(2*m.pi)
-                n,d=getPB_ND(fpr, qpr, Kr)
-                N,D=getPB_ND(fp, qp, K)
-                Aff(N, D,n,d,p)
-                name=['fp','Qp','R11','R4','C2','C3','GSP']
-                data=[fpr,qpr, R11m,R4m,C2m,C3m,GSPm]
+                
             else :
-                'ATTENTION JE REFLECHIS MAIS JE NE TROUVE PAS COMMENT REGLER CE CAS APRES RESULT ET STANDARDISATION AVEC R1'
-                'JE REMPLACE EN ATTENDANT R1M PAR LES UNIQUE MODIFICATION DE CAPA ET NON DE R11 ET R12'
                 K=k 
                 R11=(K0/k )*R1
                 R12=(K0/(K0-k))*R1
-                [R11m,R12m,R4m,C2m,C3m,Km,GSPm]= Result(['R11','R12','R4','C2','C3','K','GSP'], [R11,R12,R4,C2,C3,K,GSP],p+80)
-                [C2m,C3m], [R11m,R4m,R12m]=standardisation(['C2','C3'], [C2m,C3m], ['R11','R4','R12'], [R11m,R4m,R12m],p+80)
-                R1m=1/((2*m.pi*fp*m.sqrt(P*C2m*C3m)))
-                wp=m.sqrt(1/(R1m*C2m*C3m*R4m))
-                fpr=wp/(2*m.pi)
-                qpr=m.sqrt((R4m*C2m)/(R1m*C3m))/(1+C2m/C3m)
-                n,d=getPB_ND(fpr, qpr, Km)
-                N,D=getPB_ND(fp, qp, K)
-                Aff(N, D,n,d,p)
-                name=['fp','Qp','R11','R12','R4','C2','C3','GSP']
-                data=[fpr,qpr, R11m,R12m,R4m,C2m,C3m,GSPm]
+                
+            [R11m,R12m,R4m,C2m,C3m,Km,GSPm]= Result(['R11','R12','R4','C2','C3','K','GSP'], [R11,R12,R4,C2,C3,K,GSP],p)
+            [C2m,C3m], [R11m,R4m,R12m]=standardisation(['C2','C3'], [C2m,C3m], ['R11','R4','R12'], [R11m,R4m,R12m],p)
+            R1m=(R11m*R12m)/(R11m+R12m)
+            qpr=m.sqrt((R4m*C2m)/(R1m*C3m))/(1+C2m/C3m)
+            K0m=(qpr*qpr)*(1+(C3m/C2m))
+            Km=(R12m*K0m)/(R11m+R12m)
+            wp=m.sqrt(1/(R1m*C2m*C3m*R4m))  
+            fpr=wp/(2*m.pi)
+            n,d=getPB_ND(fpr, qpr, Km)
+            N,D=getPB_ND(fp, qp, K)
+            Aff(N, D,n,d,p)
+            name=['fp','Qp','R11','R4','C2','C3','GSP']
+            data=[fpr,qpr, R11m,R4m,C2m,C3m,GSPm]
+            
+            st.header("Analyse de sensibilité")
+            sensi=st.expander('Afficher la sensibilité')
+            d1,d2,d3=sensi.columns([1,1,1])
+            var=1
+            with d1:
+                st.write("S(Qp):") 
+                fprs=fp
+                qprs=1.01*qp
+                ns,ds=getPB_ND(fprs, qprs, K)
+                draw_sensi('S(Qp)',N,D,ns,ds,fp,var)
+                
+                st.write("S(C3):")
+                C3s=1.01*C3
+                qprs=m.sqrt((R4*C2)/(R1*C3s))/(1+C2/C3s)
+                K0s=(qprs*qprs)*(1+(C3s/C2))
+                Ks=(R12*K0s)/(R11+R12)
+                wps=m.sqrt(1/(R1*C2*C3s*R4))  
+                fprs=wps/(2*m.pi)
+                ns,ds=getPB_ND(fprs, qprs, Ks)
+                draw_sensi('S(C3)',N,D,ns,ds,fp,var)
+                
+                st.write("S(R4):")
+                R4s=1.01*R4
+                qprs=m.sqrt((R4s*C2)/(R1*C3))/(1+C2/C3)
+                K0s=(qprs*qprs)*(1+(C3/C2))
+                Ks=(R12*K0s)/(R11+R12)
+                wps=m.sqrt(1/(R1*C2*C3*R4s))  
+                fprs=wps/(2*m.pi)
+                ns,ds=getPB_ND(fprs, qprs, K)
+                draw_sensi('S(R11)',N,D,ns,ds,fp,var)
+                
+            with d2:
+                st.write("S(Wp):")
+                fprs=fp*1.01
+                qprs=qp
+                ns,ds=getPB_ND(fprs, qprs, K)
+                draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+                
+                st.write("S(R11):")
+                R11s=1.01*R11
+                R1s=(R11s*R12)/(R11s+R12)
+                qprs=m.sqrt((R4*C2)/(R1s*C3))/(1+C2/C3)
+                K0s=(qprs*qprs)*(1+(C3/C2))
+                Ks=(R12*K0s)/(R11s+R12)
+                wps=m.sqrt(1/(R1s*C2*C3*R4))  
+                fprs=wps/(2*m.pi)
+                ns,ds=getPB_ND(fprs, qprs, K)
+                draw_sensi('S(R11)',N,D,ns,ds,fp,var)
+                
+            with d3:
+                st.write("S(C2):")
+                C2s=1.01*C2
+                qprs=m.sqrt((R4*C2s)/(R1*C3))/(1+C2s/C3)
+                K0s=(qprs*qprs)*(1+(C3/C2s))
+                Ks=(R12*K0s)/(R11+R12)
+                wps=m.sqrt(1/(R1*C2s*C3*R4))  
+                fprs=wps/(2*m.pi)
+                ns,ds=getPB_ND(fprs, qprs, Ks)
+                draw_sensi('S(C2)',N,D,ns,ds,fp,var)
+                
+                st.write("S(R12):")
+                R12s=1.01*R12
+                R1s=(R11*R12s)/(R11+R12s)
+                qprs=m.sqrt((R4*C2)/(R1s*C3))/(1+C2/C3)
+                K0s=(qprs*qprs)*(1+(C3/C2))
+                Ks=(R12s*K0s)/(R11+R12s)
+                wps=m.sqrt(1/(R1s*C2*C3*R4))  
+                fprs=wps/(2*m.pi)
+                ns,ds=getPB_ND(fprs, qprs, K)
+                draw_sensi('S(R12)',N,D,ns,ds,fp,var)
+                
+            
     elif sel=='BPLQC (Passe-bande de Rauch (de type C), Q<2)':
         image='iBP-LQ-C.jpg'
         st.image(image,width=800)
@@ -739,14 +791,88 @@ def filter(p):
                 C1m=C11m+C12m
                 qpr=m.sqrt((R3m*C1m)/(R2m*C4m))/(1+R3m/R2m)
                 wp=m.sqrt(1/(R2m*C1m*C4m*R3m))
+                K0m=qpr*m.sqrt((C1m*R2m)/(C4m*R3m))
+                Km=(C11m*K0m)/(C11m+C12m)
                 fpr=wp/(2*m.pi)
                 N,D=getPB_ND(fp, qp, K)
                 n,d=getPB_ND(fpr, qpr, Km)
                 Aff(N, D,n,d,p)
                 name=['fp','Qp','R2','R3','C11','C12','C4','GSP']
                 data=[fpr,qpr, R2m,R3m,C11m,C12m,C4m,GSPm]
+                
+                st.header("Analyse de sensibilité")
+                sensi=st.expander('Afficher la sensibilité')
+                d1,d2,d3=sensi.columns([1,1,1])
+                var=1
+                with d1:
+                    st.write("S(Qp):") 
+                    fprs=fp
+                    qprs=1.01*qp
+                    ns,ds=getPB_ND(fprs, qprs, K)
+                    draw_sensi('S(Qp)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(C12):")
+                    C12s=1.01*C12
+                    C1s=C11+C12s
+                    qprs=m.sqrt((R3*C1s)/(R2*C4))/(1+R3/R2)
+                    wps=m.sqrt(1/(R2*C1s*C4*R3))
+                    K0s=qprs*m.sqrt((C1s*R2)/(C4*R3))
+                    Ks=(C11*K0s)/(C11+C12s)
+                    fprs=wps/(2*m.pi)
+                    ns,ds=getPB_ND(fprs, qprs, Ks)
+                    draw_sensi('S(C12)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(R3):")
+                    R3s=1.01*R3
+                    qprs=m.sqrt((R3s*C1)/(R2*C4))/(1+R3s/R2)
+                    wps=m.sqrt(1/(R2*C1*C4*R3s))
+                    K0s=qprs*m.sqrt((C1*R2)/(C4*R3s))
+                    Ks=(C11*K0s)/(C11+C12)
+                    fprs=wps/(2*m.pi)
+                    ns,ds=getPB_ND(fprs, qprs, Ks)
+                    draw_sensi('S(R3)',N,D,ns,ds,fp,var)
+                    
+                with d2:
+                    st.write("S(Wp):")
+                    fprs=fp*1.01
+                    qprs=qp
+                    ns,ds=getPB_ND(fprs, qprs, K)
+                    draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(C4):")
+                    C4s=1.01*C4
+                    qprs=m.sqrt((R3*C1)/(R2*C4s))/(1+R3/R2)
+                    wps=m.sqrt(1/(R2*C1*C4s*R3))
+                    K0s=qprs*m.sqrt((C1*R2)/(C4s*R3))
+                    Ks=(C11*K0s)/(C11+C12)
+                    fprs=wps/(2*m.pi)
+                    ns,ds=getPB_ND(fprs, qprs, Ks)
+                    draw_sensi('S(C4)',N,D,ns,ds,fp,var)
+                    
+                with d3:
+                    st.write("S(C11):")
+                    C11s=1.01*C11
+                    C1s=C11s+C12
+                    qprs=m.sqrt((R3*C1s)/(R2*C4))/(1+R3/R2)
+                    wps=m.sqrt(1/(R2*C1s*C4*R3))
+                    K0s=qprs*m.sqrt((C1s*R2)/(C4*R3))
+                    Ks=(C11s*K0s)/(C11s+C12)
+                    fprs=wps/(2*m.pi)
+                    ns,ds=getPB_ND(fprs, qprs, Ks)
+                    draw_sensi('S(C11)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(R2):")
+                    R2s=1.01*R2
+                    qprs=m.sqrt((R3*C1)/(R2s*C4))/(1+R3/R2s)
+                    wps=m.sqrt(1/(R2s*C1*C4*R3))
+                    K0s=qprs*m.sqrt((C1*R2s)/(C4*R3))
+                    Ks=(C11*K0s)/(C11+C12)
+                    fprs=wps/(2*m.pi)
+                    ns,ds=getPB_ND(fprs, qprs, Ks)
+                    draw_sensi('S(R2)',N,D,ns,ds,fp,var)
             else :            
                 st.markdown(':warning:**:red[ERREUR]**:warning: **Il faut que  **  $C11+C12>=4*Qp^2*C4$')
+            
     
     elif sel=='BPMQR (Passe-bande de Rauch (de type R), Q<10)':
         image='iBP-MQ-R.jpg'
@@ -765,29 +891,113 @@ def filter(p):
             GSP=(1+R5/R6)*K0        
             if k==0:
                 R11=R1
-                R12=float('inf')
+                R12=1e12
                 K=K0
             elif K0-k<=0:
                 R11=R1
-                R12=float('inf')
+                R12=1e12
                 K=K0       
             else:
-                'ATTENTION JE REFLECHIS MAIS JE NE TROUVE PAS COMMENT REGLER CE CAS APRES RESULT ET STANDARDISATION AVEC R1'
-                'JE REMPLACE EN ATTENDANT R1M PAR LES UNIQUE MODIFICATION DE CAPA ET NON DE R11 ET R12'
                 K=k
                 R11=K0/K*R1
                 R12=K0/(K0-K)*R1
-            [R11m,R12m,R4m,R5m,R6m,C2m,C3m,km,Pm,GSPm]= Result(['R11','R12','R4','R5','R6','C2','C3','K','P','GSP'], [R11,R12,R4,R5,R6,C2,C3,K,P,GSP],p)
+                
+            [R11m,R12m,R4m,R5m,R6m,C2m,C3m,Km,Pm,GSPm]= Result(['R11','R12','R4','R5','R6','C2','C3','K','P','GSP'], [R11,R12,R4,R5,R6,C2,C3,K,P,GSP],p)
             [R11m,R12m,R4m,R5m,R6m],[C2m,C3m]=standardisation(['R11','R12','R4','R5','R6'], [R11m,R12m,R4m,R5m,R6m],['C2','C3'], [C2m,C3m],p)
-            R1m=1/(2*m.pi*fp*m.sqrt(Pm*C2m*C3m))
+            R1m=(R11m*R12m)/(R11m+R12m)
             qpr=m.sqrt((R4m*C2m)/(R1m*C3m))/(1+C2m/C3m-R4m*R5m/(R1m*R6m))
+            Km=((R12m*qpr)/(R11m+R12m))*(1+R5m/R6m)*m.sqrt((C3m*R4m)/(R1m*C2m))
             wp=m.sqrt(1/(R1m*C2m*C3m*R4m))
             fpr=wp/(2*m.pi)
             N,D=getPB_ND(fp, qp, K)
-            n,d=getPB_ND(fpr, qpr, K)
+            n,d=getPB_ND(fpr, qpr, Km)
             Aff(N, D,n,d,p)
             name=['fp','Qp','R11','R12','R4','R5','C2','C3','P','GSP']
             data=[fpr,qpr, R11m,R12m,R4m,R5m,C2m,C3m,Pm,GSPm]
+            
+            st.header("Analyse de sensibilité")
+            sensi=st.expander('Afficher la sensibilité')
+            d1,d2,d3=sensi.columns([1,1,1])
+            var=1
+            with d1:
+                st.write("S(Qp):") 
+                fprs=fp
+                qprs=1.01*qp
+                ns,ds=getPB_ND(fprs, qprs, K)
+                draw_sensi('S(Qp)',N,D,ns,ds,fp,var)
+                
+                st.write("S(C3):")
+                C3s=1.01*C3
+                qprs=m.sqrt((R4*C2)/(R1*C3s))/(1+C2/C3s-R4*R5/(R1*R6))
+                Ks=((R12*qprs)/(R11+R12))*(1+R5/R6)*m.sqrt((C3s*R4)/(R1*C2))
+                wps=m.sqrt(1/(R1*C2*C3s*R4))
+                fprs=wps/(2*m.pi)
+                ns,ds=getPB_ND(fprs, qprs, Ks)
+                draw_sensi('S(C3)',N,D,ns,ds,fp,var)
+                
+                st.write("S(R4):")
+                R4s=1.01*R4
+                qprs=m.sqrt((R4s*C2)/(R1*C3))/(1+C2/C3-R4s*R5/(R1*R6))
+                Ks=((R12*qprs)/(R11+R12))*(1+R5/R6)*m.sqrt((C3*R4s)/(R1*C2))
+                wps=m.sqrt(1/(R1*C2*C3*R4s))
+                fprs=wps/(2*m.pi)
+                ns,ds=getPB_ND(fprs, qprs, Ks)
+                draw_sensi('S(R4)',N,D,ns,ds,fp,var)
+                
+            with d2:
+                st.write("S(Wp):")
+                fprs=fp*1.01
+                qprs=qp
+                ns,ds=getPB_ND(fprs, qprs, K)
+                draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+                
+                st.write("S(R11):")
+                R11s=1.01*R11
+                R1s=(R11s*R12)/(R11s+R12)
+                qprs=m.sqrt((R4*C2)/(R1s*C3))/(1+C2/C3-R4*R5/(R1s*R6))
+                Ks=((R12*qprs)/(R11s+R12))*(1+R5/R6)*m.sqrt((C3*R4)/(R1s*C2))
+                wps=m.sqrt(1/(R1s*C2*C3*R4))
+                fprs=wps/(2*m.pi)
+                ns,ds=getPB_ND(fprs, qprs, Ks)
+                draw_sensi('S(R11)',N,D,ns,ds,fp,var)
+                
+                st.write("S(R5):")
+                R5s=1.01*R5
+                qprs=m.sqrt((R4*C2)/(R1*C3))/(1+C2/C3-R4*R5s/(R1*R6))
+                Ks=((R12*qprs)/(R11+R12))*(1+R5s/R6)*m.sqrt((C3*R4)/(R1*C2))
+                wps=m.sqrt(1/(R1*C2*C3*R4))
+                fprs=wps/(2*m.pi)
+                ns,ds=getPB_ND(fprs, qprs, Ks)
+                draw_sensi('S(R5)',N,D,ns,ds,fp,var)
+                
+            with d3:
+                st.write("S(C2):")
+                C2s=1.01*C2
+                qprs=m.sqrt((R4*C2s)/(R1*C3))/(1+C2s/C3-R4*R5/(R1*R6))
+                Ks=((R12*qprs)/(R11+R12))*(1+R5/R6)*m.sqrt((C3*R4)/(R1*C2s))
+                wps=m.sqrt(1/(R1*C2s*C3*R4))
+                fprs=wps/(2*m.pi)
+                ns,ds=getPB_ND(fprs, qprs, Ks)
+                draw_sensi('S(C2)',N,D,ns,ds,fp,var)
+                
+                st.write("S(R12):")
+                R12s=1.01*R12
+                R1s=(R11*R12s)/(R11+R12s)
+                qprs=m.sqrt((R4*C2)/(R1s*C3))/(1+C2/C3-R4*R5/(R1s*R6))
+                Ks=((R12s*qprs)/(R11+R12s))*(1+R5/R6)*m.sqrt((C3*R4)/(R1s*C2))
+                wps=m.sqrt(1/(R1s*C2*C3*R4))
+                fprs=wps/(2*m.pi)
+                ns,ds=getPB_ND(fprs, qprs, Ks)
+                draw_sensi('S(R12)',N,D,ns,ds,fp,var)
+                
+                st.write("S(R6):")
+                R6s=1.01*R6
+                qprs=m.sqrt((R4*C2)/(R1*C3))/(1+C2/C3-R4*R5/(R1*R6s))
+                Ks=((R12*qprs)/(R11+R12))*(1+R5/R6s)*m.sqrt((C3*R4)/(R1*C2))
+                wps=m.sqrt(1/(R1*C2*C3*R4))
+                fprs=wps/(2*m.pi)
+                ns,ds=getPB_ND(fprs, qprs, Ks)
+                draw_sensi('S(R6)',N,D,ns,ds,fp,var)
     
     elif sel=='BPMQC (Passe-bande de Rauch (de type C), Q<10)':
         image='iBP-MQ-C.jpg'
@@ -810,13 +1020,97 @@ def filter(p):
             C1m=C11m+C12m
             qpr=m.sqrt((R3m*C1m)/(R2m*C4m))/(1+R3m/R2m-C1m*R5m/(C4m*R6m))
             wp=m.sqrt(1/(R2m*C1m*R3m*C4m))
-            Km=C11m/C1m*(1+R5m/R6m)*qpr*m.sqrt(C1m/(Pm*C4m))
+            Km=C11m/C1m*(1+R5m/R6m)*qpr*m.sqrt((C1m*R2m)/(R3m*C4m))
             fpr=wp/(2*m.pi)
             N,D=getPB_ND(fp, qp, K)
             n,d=getPB_ND(fpr, qpr, Km)
             Aff(N, D,n,d,p)
             name=['fp','Qp','R2','R3','R5','C11','C12','C4','R6  (Optionnel)','P','GSP']
             data=[fpr,qpr, R2m,R3m,R5m,C11m,C12m,C4m,R6m,Pm,GSPm]
+            
+            st.header("Analyse de sensibilité")
+            sensi=st.expander('Afficher la sensibilité')
+            d1,d2,d3=sensi.columns([1,1,1])
+            var=1
+            with d1:
+                st.write("S(Qp):") 
+                fprs=fp
+                qprs=1.01*qp
+                ns,ds=getPB_ND(fprs, qprs, K)
+                draw_sensi('S(Qp)',N,D,ns,ds,fp,var)
+                
+                st.write("S(C12):")
+                C12s=1.01*C12
+                C1s=C11+C12s
+                qprs=m.sqrt((R3*C1s)/(R2*C4))/(1+R3/R2-C1s*R5/(C4*R6))
+                wps=m.sqrt(1/(R2*C1s*R3*C4))
+                Ks=C11/C1s*(1+R5/R6)*qprs*m.sqrt((C1s*R2)/(R3*C4))
+                fprs=wps/(2*m.pi)
+                ns,ds=getPB_ND(fprs, qprs, Ks)
+                draw_sensi('S(C12)',N,D,ns,ds,fp,var)
+                
+                st.write("S(R3):")
+                R3s=1.01*R3
+                qprs=m.sqrt((R3s*C1)/(R2*C4))/(1+R3s/R2-C1*R5/(C4*R6))
+                wps=m.sqrt(1/(R2*C1*R3s*C4))
+                Ks=C11/C1*(1+R5/R6)*qprs*m.sqrt((C1*R2)/(R3s*C4))
+                fprs=wps/(2*m.pi)
+                ns,ds=getPB_ND(fprs, qprs, Ks)
+                draw_sensi('S(R3)',N,D,ns,ds,fp,var)
+                
+            with d2:
+                st.write("S(Wp):")
+                fprs=fp*1.01
+                qprs=qp
+                ns,ds=getPB_ND(fprs, qprs, K)
+                draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+                
+                st.write("S(C4):")
+                C4s=1.01*C4
+                qprs=m.sqrt((R3*C1)/(R2*C4s))/(1+R3/R2-C1*R5/(C4s*R6))
+                wps=m.sqrt(1/(R2*C1*R3*C4s))
+                Ks=C11/C1*(1+R5/R6)*qprs*m.sqrt((C1*R2)/(R3*C4s))
+                fprs=wps/(2*m.pi)
+                ns,ds=getPB_ND(fprs, qprs, Ks)
+                draw_sensi('S(C4)',N,D,ns,ds,fp,var)
+                
+                st.write("S(R5):")
+                R5s=1.01*R5
+                qprs=m.sqrt((R3*C1)/(R2*C4))/(1+R3/R2-C1*R5s/(C4*R6))
+                wps=m.sqrt(1/(R2*C1*R3*C4))
+                Ks=C11/C1*(1+R5s/R6)*qprs*m.sqrt((C1*R2)/(R3*C4))
+                fprs=wps/(2*m.pi)
+                ns,ds=getPB_ND(fprs, qprs, Ks)
+                draw_sensi('S(R5)',N,D,ns,ds,fp,var)
+                
+            with d3:
+                st.write("S(C11):")
+                C11s=1.01*C11
+                C1s=C11s+C12
+                qprs=m.sqrt((R3*C1s)/(R2*C4))/(1+R3/R2-C1s*R5/(C4*R6))
+                wps=m.sqrt(1/(R2*C1s*R3*C4))
+                Ks=C11s/C1s*(1+R5/R6)*qprs*m.sqrt((C1s*R2)/(R3*C4))
+                fprs=wps/(2*m.pi)
+                ns,ds=getPB_ND(fprs, qprs, Ks)
+                draw_sensi('S(C11)',N,D,ns,ds,fp,var)
+                
+                st.write("S(R2):")
+                R2s=1.01*R2
+                qprs=m.sqrt((R3*C1)/(R2s*C4))/(1+R3/R2s-C1*R5/(C4*R6))
+                wps=m.sqrt(1/(R2s*C1*R3*C4))
+                Ks=C11/C1*(1+R5/R6)*qprs*m.sqrt((C1*R2s)/(R3*C4))
+                fprs=wps/(2*m.pi)
+                ns,ds=getPB_ND(fprs, qprs, Ks)
+                draw_sensi('S(R2)',N,D,ns,ds,fp,var)
+                
+                st.write("S(R6):")
+                R6s=1.01*R6
+                qprs=m.sqrt((R3*C1)/(R2*C4))/(1+R3/R2-C1*R5/(C4*R6s))
+                wps=m.sqrt(1/(R2*C1*R3*C4))
+                Ks=C11/C1*(1+R5/R6s)*qprs*m.sqrt((C1*R2)/(R3*C4))
+                fprs=wps/(2*m.pi)
+                ns,ds=getPB_ND(fprs, qprs, Ks)
+                draw_sensi('S(R6)',N,D,ns,ds,fp,var)
         
     elif sel=='Passe-bas de Flieghe (Q<30)':
         image='iLP-HQ.jpg'
@@ -835,19 +1129,101 @@ def filter(p):
             R6=Rd
             R1=qp*R_optimal
             R7=(R_optimal*R_optimal)/Rd       
-            k=fp*R1*C1    
+            K=1+R2/R6    
             
             [R1m,R2m,R3m,R6m,R7m,C1m,C4m]=Result(['R1','R2','R3','R6','R7','C1','C4'], [R1,R2,R3,R6,R7,C1,C4],p)
             [R1m,R2m,R3m,R6m,R7m],[C1m,C4m]=standardisation(['R1','R2','R3','R6','R7'], [R1m,R2m,R3m,R6m,R7m], ['C1','C4'],[C1m,C4m],p)
-            Kr=1+R2m/R6m
+            Km=1+R2m/R6m
             wp=m.sqrt(R6m/(R2m*R3m*R7m*C1m*C4m))
             qpr=wp*R1m*C1m
             fpr=wp/(2*m.pi)
-            N,D=getLP_ND(fp, qp, k)
-            n,d=getLP_ND(fpr, qpr, Kr)
+            N,D=getLP_ND(fp, qp, K)
+            n,d=getLP_ND(fpr, qpr, Km)
             Aff(N, D,n,d,p)
             name=['fp','Qp','R1','R2','R3','R6','R7','C1','C4']
             data=[fpr,qpr, R1m,R2m,R3m,R6m,R7m,C1m,C4m]
+            
+            st.header("Analyse de sensibilité")
+            sensi=st.expander('Afficher la sensibilité')
+            d1,d2,d3=sensi.columns([1,1,1])
+            var=1
+            with d1:
+                st.write("S(Qp):") 
+                fprs=fp
+                qprs=1.01*qp
+                ns,ds=getLP_ND(fprs, qprs, K)
+                draw_sensi('S(Qp)',N,D,ns,ds,fp,var)
+                
+                st.write("S(C4):")
+                C4s=1.01*C4
+                Ks=1+R2/R6
+                wps=m.sqrt(R6/(R2*R3*R7*C1*C4s))
+                qprs=wps*R1*C1
+                fprs=wps/(2*m.pi)
+                ns,ds=getLP_ND(fprs, qprs, Ks)
+                draw_sensi('S(C4)',N,D,ns,ds,fp,var)
+                
+                st.write("S(R3):")
+                R3s=1.01*R3
+                Ks=1+R2/R6
+                wps=m.sqrt(R6/(R2*R3s*R7*C1*C4))
+                qprs=wps*R1*C1
+                fprs=wps/(2*m.pi)
+                ns,ds=getLP_ND(fprs, qprs, Ks)
+                draw_sensi('S(R3)',N,D,ns,ds,fp,var)
+                
+            with d2:
+                st.write("S(Wp):")
+                fprs=fp*1.01
+                qprs=qp
+                ns,ds=getLP_ND(fprs, qprs, K)
+                draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+                
+                st.write("S(R1):")
+                R1s=1.01*R1
+                Ks=1+R2/R6
+                wps=m.sqrt(R6/(R2*R3*R7*C1*C4))
+                qprs=wps*R1s*C1
+                fprs=wps/(2*m.pi)
+                ns,ds=getLP_ND(fprs, qprs, Ks)
+                draw_sensi('S(R1)',N,D,ns,ds,fp,var)
+                
+                st.write("S(R6):")
+                R6s=1.01*R6
+                Ks=1+R2/R6s
+                wps=m.sqrt(R6s/(R2*R3*R7*C1*C4))
+                qprs=wps*R1*C1
+                fprs=wps/(2*m.pi)
+                ns,ds=getLP_ND(fprs, qprs, Ks)
+                draw_sensi('S(R6)',N,D,ns,ds,fp,var)
+                
+            with d3:
+                st.write("S(C1):")
+                C1s=1.01*C1
+                Ks=1+R2/R6
+                wps=m.sqrt(R6/(R2*R3*R7*C1s*C4))
+                qprs=wps*R1*C1s
+                fprs=wps/(2*m.pi)
+                ns,ds=getLP_ND(fprs, qprs, Ks)
+                draw_sensi('S(C1)',N,D,ns,ds,fp,var)
+                
+                st.write("S(R2):")
+                R2s=1.01*R2
+                Ks=1+R2s/R6
+                wps=m.sqrt(R6/(R2s*R3*R7*C1*C4))
+                qprs=wps*R1*C1
+                fprs=wps/(2*m.pi)
+                ns,ds=getLP_ND(fprs, qprs, Ks)
+                draw_sensi('S(R2)',N,D,ns,ds,fp,var)
+                
+                st.write("S(R7):")
+                R7s=1.01*R7
+                Ks=1+R2/R6
+                wps=m.sqrt(R6/(R2*R3*R7s*C1*C4))
+                qprs=wps*R1*C1
+                fprs=wps/(2*m.pi)
+                ns,ds=getLP_ND(fprs, qprs, Ks)
+                draw_sensi('S(R7)',N,D,ns,ds,fp,var)
     
     elif sel=='Passe-bande de Flieghe (Q<30)':
         image='iBP-HQ.jpg'
@@ -856,10 +1232,7 @@ def filter(p):
             
             [fp,qp,C]=Param(['fp','Qp','C'],30,p)
             R_optimal=1/(2*m.pi*fp*C)
-            R_optimal=int(R_optimal)
-            minval=R_optimal-10
-            maxval=R_optimal+10
-            Rd=st.slider("Choix de Rd=R2=R3=R6 proche de R optimale calculée sur base de fp et C.",minval,maxval,R_optimal)
+            Rd=R_optimal
             C3=C
             C8=C
             R2=Rd
@@ -871,15 +1244,97 @@ def filter(p):
             
             [R1m,R2m,R4m,R6m,R7m,C3m,C8m]= Result(['R1','R2','R4','R6','R7','C3','C8'], [R1,R2,R4,R6,R7,C3,C8],p)
             [C3m,C8m],[R1m,R2m,R4m,R6m,R7m]=standardisation(['C3','C8'], [C3m,C8m], ['R1','R2','R4','R6','R7'], [R1m,R2m,R4m,R6m,R7m],p)
-            Kr=1+R2m/R6m
+            Km=1+R2m/R6m
             wp=m.sqrt(R2m/(R1m*R4m*R6m*C3m*C8m))
             qpr=wp*R7m*C8m
             fpr=wp/(2*m.pi)
-            N,D=getLP_ND(fp, qp, K)
-            n,d=getLP_ND(fpr, qpr, Kr)
+            N,D=getPB_ND(fp, qp, K)
+            n,d=getPB_ND(fpr, qpr, Km)
             Aff(N, D,n,d,p)
             data=[fp,qp,R1m,R2m,R4m,R6m,R7m,C3m,C8m]
             name=['fp','Qp','R1','R2','R4','R6','R7','C3','C8']
+            
+            st.header("Analyse de sensibilité")
+            sensi=st.expander('Afficher la sensibilité')
+            d1,d2,d3=sensi.columns([1,1,1])
+            var=1
+            with d1:
+                st.write("S(Qp):") 
+                fprs=fp
+                qprs=1.01*qp
+                ns,ds=getPB_ND(fprs, qprs, K)
+                draw_sensi('S(Qp)',N,D,ns,ds,fp,var)
+                
+                st.write("S(C8):")
+                C8s=1.01*C8
+                Ks=1+R2/R6
+                wps=m.sqrt(R2/(R1*R4*R6*C3*C8s))
+                qprs=wps*R7*C8s
+                fprs=wps/(2*m.pi)
+                ns,ds=getPB_ND(fprs, qprs, Ks)
+                draw_sensi('S(C8)',N,D,ns,ds,fp,var)
+                
+                st.write("S(R4):")
+                R4s=1.01*R4
+                Ks=1+R2/R6
+                wps=m.sqrt(R2/(R1*R4s*R6*C3*C8))
+                qprs=wps*R7*C8
+                fprs=wps/(2*m.pi)
+                ns,ds=getPB_ND(fprs, qprs, Ks)
+                draw_sensi('S(R4)',N,D,ns,ds,fp,var)
+                
+            with d2:
+                st.write("S(Wp):")
+                fprs=fp*1.01
+                qprs=qp
+                ns,ds=getPB_ND(fprs, qprs, K)
+                draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+                
+                st.write("S(R1):")
+                R1s=1.01*R1
+                Ks=1+R2/R6
+                wps=m.sqrt(R2/(R1s*R4*R6*C3*C8))
+                qprs=wps*R7*C8
+                fprs=wps/(2*m.pi)
+                ns,ds=getPB_ND(fprs, qprs, Ks)
+                draw_sensi('S(R1)',N,D,ns,ds,fp,var)
+                
+                st.write("S(R6):")
+                R6s=1.01*R6
+                Ks=1+R2/R6s
+                wps=m.sqrt(R2/(R1*R4*R6s*C3*C8))
+                qprs=wps*R7*C8
+                fprs=wps/(2*m.pi)
+                ns,ds=getPB_ND(fprs, qprs, Ks)
+                draw_sensi('S(R6)',N,D,ns,ds,fp,var)
+                
+            with d3:
+                st.write("S(C3):")
+                C3s=1.01*C3
+                Ks=1+R2/R6
+                wps=m.sqrt(R2/(R1*R4*R6*C3s*C8))
+                qprs=wps*R7*C8
+                fprs=wps/(2*m.pi)
+                ns,ds=getPB_ND(fprs, qprs, Ks)
+                draw_sensi('S(C3)',N,D,ns,ds,fp,var)
+                
+                st.write("S(R2):")
+                R2s=1.01*R2
+                Ks=1+R2s/R6
+                wps=m.sqrt(R2s/(R1*R4*R6*C3*C8))
+                qprs=wps*R7*C8
+                fprs=wps/(2*m.pi)
+                ns,ds=getPB_ND(fprs, qprs, Ks)
+                draw_sensi('S(R2)',N,D,ns,ds,fp,var)
+                
+                st.write("S(R7):")
+                R7s=1.01*R7
+                Ks=1+R2/R6
+                wps=m.sqrt(R2/(R1*R4*R6*C3*C8))
+                qprs=wps*R7s*C8
+                fprs=wps/(2*m.pi)
+                ns,ds=getPB_ND(fprs, qprs, Ks)
+                draw_sensi('S(R7)',N,D,ns,ds,fp,var)
     
     elif sel=='Passe-haut de Flieghe (Q<30)':
         image='iHP-HQ.jpg'
@@ -888,10 +1343,7 @@ def filter(p):
             [fp,qp,C]=Param(['fp','Qp','C'],30,p)
          
             R_optimal=1/(2*m.pi*fp*C)
-            R_optimal=int(R_optimal)
-            minval=R_optimal-10
-            maxval=R_optimal+10
-            Rd=st.slider("Choix de Rd=R2=R3=R6 proche de R optimale calculée sur base de fp et C.",minval,maxval,R_optimal)
+            Rd=R_optimal
             C3=C
             C7=C
             R2=Rd
@@ -903,15 +1355,97 @@ def filter(p):
             
             [R1m,R2m,R4m,R6m,R8m,C3m,C7m]= Result(['R1','R2','R4','R6','R8','C3','C7'], [R1,R2,R4,R6,R8,C3,C7],p)
             [C3m,C7m],[R1m,R2m,R4m,R6m,R8m]=standardisation(['C3','C7'], [C3m,C7m], ['R1','R2','R4','R6','R8'], [R1m,R2m,R4m,R6m,R8m],p)
-            Kr=1+R2m/R6m
+            Km=1+R2m/R6m
             wp=m.sqrt(R2m/(R1m*R4m*R6m*C3m*C7m))
             qpr=wp*R8m*C7m
             fpr=wp/(2*m.pi)
-            N,D=getLP_ND(fp, qp, K)
-            n,d=getLP_ND(fpr, qpr, Kr)
+            N,D=getHP_ND(fp, qp, K)
+            n,d=getHP_ND(fpr, qpr, Km)
             Aff(N, D,n,d,p)
             data=[fp,qp,R1m,R2m,R4m,R6m,R8m,C3m,C7m]
             name=['fp','Qp','R1','R2','R4','R6','R8','C3','C7']
+            
+            st.header("Analyse de sensibilité")
+            sensi=st.expander('Afficher la sensibilité')
+            d1,d2,d3=sensi.columns([1,1,1])
+            var=1
+            with d1:
+                st.write("S(Qp):") 
+                fprs=fp
+                qprs=1.01*qp
+                ns,ds=getHP_ND(fprs, qprs, K)
+                draw_sensi('S(Qp)',N,D,ns,ds,fp,var)
+                
+                st.write("S(C7):")
+                C7s=1.01*C7
+                Ks=1+R2/R6
+                wps=m.sqrt(R2/(R1*R4*R6*C3*C7s))
+                qprs=wps*R8*C7s
+                fprs=wps/(2*m.pi)
+                ns,ds=getHP_ND(fprs, qprs, Ks)
+                draw_sensi('S(C7)',N,D,ns,ds,fp,var)
+                
+                st.write("S(R4):")
+                R4s=1.01*R4
+                Ks=1+R2/R6
+                wps=m.sqrt(R2/(R1*R4s*R6*C3*C7))
+                qprs=wps*R8*C7
+                fprs=wps/(2*m.pi)
+                ns,ds=getHP_ND(fprs, qprs, Ks)
+                draw_sensi('S(R4)',N,D,ns,ds,fp,var)
+                
+            with d2:
+                st.write("S(Wp):")
+                fprs=fp*1.01
+                qprs=qp
+                ns,ds=getHP_ND(fprs, qprs, K)
+                draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+                
+                st.write("S(R1):")
+                R1s=1.01*R1
+                Ks=1+R2/R6
+                wps=m.sqrt(R2/(R1s*R4*R6*C3*C7))
+                qprs=wps*R8*C7
+                fprs=wps/(2*m.pi)
+                ns,ds=getHP_ND(fprs, qprs, Ks)
+                draw_sensi('S(R1)',N,D,ns,ds,fp,var)
+                
+                st.write("S(R6):")
+                R6s=1.01*R6
+                Ks=1+R2/R6s
+                wps=m.sqrt(R2/(R1*R4*R6s*C3*C7))
+                qprs=wps*R8*C7
+                fprs=wps/(2*m.pi)
+                ns,ds=getHP_ND(fprs, qprs, Ks)
+                draw_sensi('S(R6)',N,D,ns,ds,fp,var)
+                
+            with d3:
+                st.write("S(C3):")
+                C3s=1.01*C3
+                Ks=1+R2/R6
+                wps=m.sqrt(R2/(R1*R4*R6*C3s*C7))
+                qprs=wps*R8*C7
+                fprs=wps/(2*m.pi)
+                ns,ds=getHP_ND(fprs, qprs, Ks)
+                draw_sensi('S(C3)',N,D,ns,ds,fp,var)
+                
+                st.write("S(R2):")
+                R2s=1.01*R2
+                Ks=1+R2s/R6
+                wps=m.sqrt(R2s/(R1*R4*R6*C3*C7))
+                qprs=wps*R8*C7
+                fprs=wps/(2*m.pi)
+                ns,ds=getHP_ND(fprs, qprs, Ks)
+                draw_sensi('S(R2)',N,D,ns,ds,fp,var)
+                
+                st.write("S(R8):")
+                R8s=1.01*R8
+                Ks=1+R2/R6
+                wps=m.sqrt(R2/(R1*R4*R6*C3*C7))
+                qprs=wps*R8s*C7
+                fprs=wps/(2*m.pi)
+                ns,ds=getHP_ND(fprs, qprs, Ks)
+                draw_sensi('S(R8)',N,D,ns,ds,fp,var)
     
     elif sel=='Réjecteur de fréquence de Flieghe (Q<30)':
         image='iHP-HQ.jpg'
@@ -920,10 +1454,7 @@ def filter(p):
            
             [fz,fp,qp,C]=Param(['fz','fp','Qp','C'],30,p)
             R_optimal=1/(2*m.pi*fp*C)
-            R_optimal=int(R_optimal)
-            minval=R_optimal-10
-            maxval=R_optimal+10
-            Rd=st.slider("Choix de Rd=R2=R3=R6 proche de R optimale calculée sur base de fp et C.",minval,maxval,R_optimal)
+            Rd=R_optimal
             C2=C
             C7=C
             R3=Rd
@@ -945,6 +1476,104 @@ def filter(p):
                 Aff(N, D,n,d,p)
                 data=[fz,fp,qp,R1m,R3m,R4m,R5m,R8m,C2m,C7m]
                 name=['fz','fp','Qp','R1','R3','R4','R5','R8','C2','C7']
+                
+                st.header("Analyse de sensibilité")
+                sensi=st.expander('Afficher la sensibilité')
+                d1,d2,d3=sensi.columns([1,1,1])
+                var=1
+                with d1:
+                    st.write("S(Qp):") 
+                    fprs=fp
+                    qprs=1.01*qp
+                    fzrs=fz
+                    ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
+                    draw_sensi('S(Qp)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(C2):")
+                    C2s=1.01*C2
+                    wprs=m.sqrt(R3/(R1*R4*R5*C2s*C7))
+                    qprs=wprs*C7*R8
+                    wzrlpns=wprs*m.sqrt(1+R4/R8)
+                    fprs=wprs/(2*m.pi)
+                    fzrs=wzrlpns/(2*m.pi)
+                    ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
+                    draw_sensi('S(C2)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(R3):")
+                    R3s=1.01*R3
+                    wprs=m.sqrt(R3s/(R1*R4*R5*C2*C7))
+                    qprs=wprs*C7*R8
+                    wzrlpns=wprs*m.sqrt(1+R4/R8)
+                    fprs=wprs/(2*m.pi)
+                    fzrs=wzrlpns/(2*m.pi)
+                    ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
+                    draw_sensi('S(R3)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(R8):")
+                    R8s=1.01*R8
+                    wprs=m.sqrt(R3/(R1*R4*R5*C2*C7))
+                    qprs=wprs*C7*R8s
+                    wzrlpns=wprs*m.sqrt(1+R4/R8s)
+                    fprs=wprs/(2*m.pi)
+                    fzrs=wzrlpns/(2*m.pi)
+                    ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
+                    draw_sensi('S(R8)',N,D,ns,ds,fp,var)
+                    
+                with d2:
+                    st.write("S(Wp):")
+                    fprs=fp*1.01
+                    qprs=qp
+                    fzrs=fz
+                    ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
+                    draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(C7):")
+                    C7s=1.01*C7
+                    wprs=m.sqrt(R3/(R1*R4*R5*C2*C7s))
+                    qprs=wprs*C7s*R8
+                    wzrlpns=wprs*m.sqrt(1+R4/R8)
+                    fprs=wprs/(2*m.pi)
+                    fzrs=wzrlpns/(2*m.pi)
+                    ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
+                    draw_sensi('S(C7)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(R4):")
+                    R4s=1.01*R4
+                    wprs=m.sqrt(R3/(R1*R4s*R5*C2*C7))
+                    qprs=wprs*C7*R8
+                    wzrlpns=wprs*m.sqrt(1+R4s/R8)
+                    fprs=wprs/(2*m.pi)
+                    fzrs=wzrlpns/(2*m.pi)
+                    ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
+                    draw_sensi('S(R4)',N,D,ns,ds,fp,var)
+                    
+                with d3:
+                    st.write("S(Wz):")
+                    fzrs=fz*1.01
+                    qprs=qp
+                    fprs=fp
+                    ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
+                    draw_sensi('S(Wz)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(R1):")
+                    R1s=1.01*R1
+                    wprs=m.sqrt(R3/(R1s*R4*R5*C2*C7))
+                    qprs=wprs*C7*R8
+                    wzrlpns=wprs*m.sqrt(1+R4/R8)
+                    fprs=wprs/(2*m.pi)
+                    fzrs=wzrlpns/(2*m.pi)
+                    ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
+                    draw_sensi('S(R1)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(R5):")
+                    R5s=1.01*R5
+                    wprs=m.sqrt(R3/(R1*R4*R5s*C2*C7))
+                    qprs=wprs*C7*R8
+                    wzrlpns=wprs*m.sqrt(1+R4/R8)
+                    fprs=wprs/(2*m.pi)
+                    fzrs=wzrlpns/(2*m.pi)
+                    ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
+                    draw_sensi('S(R5)',N,D,ns,ds,fp,var)
         
             elif fz<fp:
                 R4=R8*(1-((fz/fp)*(fz/fp)))
@@ -965,6 +1594,104 @@ def filter(p):
                     Aff(N, D,n,d,p)
                     data=[fz,fp,qp,R1m,R3m,R4m,R5m,R8m,C2m,C7m]
                     name=['fz','fp','Qp','R1','R3','R4','R5','R8','C2','C7']
+                    
+                    st.header("Analyse de sensibilité")
+                    sensi=st.expander('Afficher la sensibilité')
+                    d1,d2,d3=sensi.columns([1,1,1])
+                    var=1
+                    with d1:
+                        st.write("S(Qp):") 
+                        fprs=fp
+                        qprs=1.01*qp
+                        fzrs=fz
+                        ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
+                        draw_sensi('S(Qp)',N,D,ns,ds,fp,var)
+                        
+                        st.write("S(C2):")
+                        C2s=1.01*C2
+                        wps=m.sqrt(R3/(R1*R4*R5*C2s*C7))
+                        qprs=wps*C7*R8
+                        wzrhpns=wps*m.sqrt(1-(R1*R4)/(R3*R8))
+                        fprs=wps/(2*m.pi)
+                        fzrs=wzrhpns/(2*m.pi)
+                        ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
+                        draw_sensi('S(C2)',N,D,ns,ds,fp,var)
+                        
+                        st.write("S(R3):")
+                        R3s=1.01*R3
+                        wps=m.sqrt(R3s/(R1*R4*R5*C2*C7))
+                        qprs=wps*C7*R8
+                        wzrhpns=wps*m.sqrt(1-(R1*R4)/(R3s*R8))
+                        fprs=wps/(2*m.pi)
+                        fzrs=wzrhpns/(2*m.pi)
+                        ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
+                        draw_sensi('S(R3)',N,D,ns,ds,fp,var)
+                        
+                        st.write("S(R8):")
+                        R8s=1.01*R8
+                        wps=m.sqrt(R3/(R1*R4*R5*C2*C7))
+                        qprs=wps*C7*R8s
+                        wzrhpns=wps*m.sqrt(1-(R1*R4)/(R3*R8s))
+                        fprs=wps/(2*m.pi)
+                        fzrs=wzrhpns/(2*m.pi)
+                        ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
+                        draw_sensi('S(R8)',N,D,ns,ds,fp,var)
+                        
+                    with d2:
+                        st.write("S(Wp):")
+                        fprs=fp*1.01
+                        qprs=qp
+                        fzrs=fz
+                        ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
+                        draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+                        
+                        st.write("S(C7):")
+                        C7s=1.01*C7
+                        wps=m.sqrt(R3/(R1*R4*R5*C2*C7s))
+                        qprs=wps*C7s*R8
+                        wzrhpns=wps*m.sqrt(1-(R1*R4)/(R3*R8))
+                        fprs=wps/(2*m.pi)
+                        fzrs=wzrhpns/(2*m.pi)
+                        ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
+                        draw_sensi('S(C7)',N,D,ns,ds,fp,var)
+                        
+                        st.write("S(R4):")
+                        R4s=1.01*R4
+                        wps=m.sqrt(R3/(R1*R4s*R5*C2*C7))
+                        qprs=wps*C7*R8
+                        wzrhpns=wps*m.sqrt(1-(R1*R4s)/(R3*R8))
+                        fprs=wps/(2*m.pi)
+                        fzrs=wzrhpns/(2*m.pi)
+                        ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
+                        draw_sensi('S(R4)',N,D,ns,ds,fp,var)
+                        
+                    with d3:
+                        st.write("S(Wz):")
+                        fzrs=fz*1.01
+                        qprs=qp
+                        fprs=fp
+                        ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
+                        draw_sensi('S(Wz)',N,D,ns,ds,fp,var)
+                        
+                        st.write("S(R1):")
+                        R1s=1.01*R1
+                        wps=m.sqrt(R3/(R1s*R4*R5*C2*C7))
+                        qprs=wps*C7*R8
+                        wzrhpns=wps*m.sqrt(1-(R1s*R4)/(R3*R8))
+                        fprs=wps/(2*m.pi)
+                        fzrs=wzrhpns/(2*m.pi)
+                        ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
+                        draw_sensi('S(R1)',N,D,ns,ds,fp,var)
+                        
+                        st.write("S(R5):")
+                        R5s=1.01*R5
+                        wps=m.sqrt(R3/(R1*R4*R5s*C2*C7))
+                        qprs=wps*C7*R8
+                        wzrhpns=wps*m.sqrt(1-(R1*R4)/(R3*R8))
+                        fprs=wps/(2*m.pi)
+                        fzrs=wzrhpns/(2*m.pi)
+                        ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
+                        draw_sensi('S(R5)',N,D,ns,ds,fp,var)
             
             else:
                 st.markdown(":warning: **fz doit être différente de fp**")
@@ -981,10 +1708,7 @@ def filter(p):
                 [fp,qp,C]=Param(['fp','Qp','C=C9=C10'],100,p)
                 
                 R_optimal=1/(2*m.pi*fp*C)
-                R_optimalint=int(R_optimal)
-                minval=R_optimalint-10
-                maxval=R_optimalint+10
-                Rd=st.slider("Choix de Rd=R2=R3=R7 proche de R optimale calculée sur base de fp et C.",minval,maxval,R_optimalint,key=clès+3)
+                Rd=R_optimal
                 C9=C
                 C10=C
                 R2=Rd
@@ -1007,14 +1731,110 @@ def filter(p):
                 data=[fp,qp,R1m,R2m,R3m,R5m,R7m,R8m,C9m,C10m]
                 name=['fp','Qp','R1','R2','R3','R5','R7','R8','C9','C10']
                 
+                st.header("Analyse de sensibilité")
+                sensi=st.expander('Afficher la sensibilité')
+                d1,d2,d3=sensi.columns([1,1,1])
+                var=1
+                with d1:
+                    st.write("S(Qp):") 
+                    fprs=fp
+                    qprs=1.01*qp
+                    ns,ds=getLPTT_ND(fprs, qprs, K3)
+                    draw_sensi('S(Qp)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(C10):")
+                    C10s=1.01*C10
+                    fprs=(m.sqrt(R8/(R2*R3*R7*C9*C10s)))/(2*m.pi)
+                    qprs=R1*m.sqrt(R8*C9/(R2*R3*R7*C10s))
+                    K3s=R8/(R7*R3*R5*C9*C10s)
+                    ns,ds=getLPTT_ND(fprs, qprs, K3s)
+                    draw_sensi('S(C10)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(R3):")
+                    R3s=1.01*R3
+                    fprs=(m.sqrt(R8/(R2*R3s*R7*C9*C10)))/(2*m.pi)
+                    qprs=R1*m.sqrt(R8*C9/(R2*R3s*R7*C10))
+                    K3s=R8/(R7*R3s*R5*C9*C10)
+                    ns,ds=getLPTT_ND(fprs, qprs, K3s)
+                    draw_sensi('S(R3)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(R6):")
+                    R6s=1.01*R6
+                    fprs=(m.sqrt(R8/(R2*R3*R7*C9*C10)))/(2*m.pi)
+                    qprs=R1*m.sqrt(R8*C9/(R2*R3*R7*C10))
+                    K3s=R8/(R7*R3*R5*C9*C10)
+                    ns,ds=getLPTT_ND(fprs, qprs, K3s)
+                    draw_sensi('S(R6)',N,D,ns,ds,fp,var)
+                    
+                with d2:
+                    st.write("S(Wp):")
+                    fprs=fp*1.01
+                    qprs=qp
+                    ns,ds=getLPTT_ND(fprs, qprs, K3)
+                    draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(R1):")
+                    R1s=1.01*R1
+                    fprs=(m.sqrt(R8/(R2*R3*R7*C9*C10)))/(2*m.pi)
+                    qprs=R1s*m.sqrt(R8*C9/(R2*R3*R7*C10))
+                    K3s=R8/(R7*R3*R5*C9*C10)
+                    ns,ds=getLPTT_ND(fprs, qprs, K3s)
+                    draw_sensi('S(R1)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(R4):")
+                    R4s=1.01*R4
+                    fprs=(m.sqrt(R8/(R2*R3*R7*C9*C10)))/(2*m.pi)
+                    qprs=R1*m.sqrt(R8*C9/(R2*R3*R7*C10))
+                    K3s=R8/(R7*R3*R5*C9*C10)
+                    ns,ds=getLPTT_ND(fprs, qprs, K3s)
+                    draw_sensi('S(R4)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(R7):")
+                    R7s=1.01*R7
+                    fprs=(m.sqrt(R8/(R2*R3*R7s*C9*C10)))/(2*m.pi)
+                    qprs=R1*m.sqrt(R8*C9/(R2*R3*R7s*C10))
+                    K3s=R8/(R7s*R3*R5*C9*C10)
+                    ns,ds=getLPTT_ND(fprs, qprs, K3s)
+                    draw_sensi('S(R7)',N,D,ns,ds,fp,var)
+                    
+                with d3:
+                    st.write("S(C9):")
+                    C9s=1.01*C9
+                    fprs=(m.sqrt(R8/(R2*R3*R7*C9s*C10)))/(2*m.pi)
+                    qprs=R1*m.sqrt(R8*C9s/(R2*R3*R7*C10))
+                    K3s=R8/(R7*R3*R5*C9s*C10)
+                    ns,ds=getLPTT_ND(fprs, qprs, K3s)
+                    draw_sensi('S(C9)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(R2):")
+                    R2s=1.01*R2
+                    fprs=(m.sqrt(R8/(R2s*R3*R7*C9*C10)))/(2*m.pi)
+                    qprs=R1*m.sqrt(R8*C9/(R2s*R3*R7*C10))
+                    K3s=R8/(R7*R3*R5*C9*C10)
+                    ns,ds=getLPTT_ND(fprs, qprs, K3s)
+                    draw_sensi('S(R2)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(R5):")
+                    R5s=1.01*R5
+                    fprs=(m.sqrt(R8/(R2*R3*R7*C9*C10)))/(2*m.pi)
+                    qprs=R1*m.sqrt(R8*C9/(R2*R3*R7*C10))
+                    K3s=R8/(R7*R3*R5s*C9*C10)
+                    ns,ds=getLPTT_ND(fprs, qprs, K3s)
+                    draw_sensi('S(R5)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(R8):")
+                    R8s=1.01*R8
+                    fprs=(m.sqrt(R8s/(R2*R3*R7*C9*C10)))/(2*m.pi)
+                    qprs=R1*m.sqrt(R8s*C9/(R2*R3*R7*C10))
+                    K3s=R8s/(R7*R3*R5*C9*C10)
+                    ns,ds=getLPTT_ND(fprs, qprs, K3s)
+                    draw_sensi('S(R8)',N,D,ns,ds,fp,var)
+                
             elif typ=='Passe-Haut':
                 [fp,qp,C]=Param(['fp','Qp','C=C9=C10'],100,p)
                 sel+='(passe-haut)'
                 R_optimal=1/(2*m.pi*fp*C)
-                R_optimalint=int(R_optimal)
-                minval=R_optimalint-10
-                maxval=R_optimalint+10
-                Rd=st.slider("Choix de Rd=R2=R3=R7 proche de R optimale calculée sur base de fp et C.",minval,maxval,R_optimalint,p)
+                Rd=R_optimal
                 C9=C
                 C10=C
                 R2=Rd
@@ -1037,15 +1857,111 @@ def filter(p):
                 data=[fp,qp,R1m,R2m,R3m,R6m,R7m,R8m,C9m,C10m]
                 name=['R1','R2','R3','R6','R7','R8','C9','C10']
                 
+                st.header("Analyse de sensibilité")
+                sensi=st.expander('Afficher la sensibilité')
+                d1,d2,d3=sensi.columns([1,1,1])
+                var=1
+                with d1:
+                    st.write("S(Qp):") 
+                    fprs=fp
+                    qprs=1.01*qp
+                    ns,ds=getHPTT_ND(fprs, qprs, K1)
+                    draw_sensi('S(Qp)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(C10):")
+                    C10s=1.01*C10
+                    fprs=(m.sqrt(R8/(R2*R3*R7*C9*C10s)))/(2*m.pi)
+                    qprs=R1*m.sqrt(R8*C9/(R2*R3*R7*C10s))
+                    K1s=-R8/R6
+                    ns,ds=getHPTT_ND(fprs, qprs, K1s)
+                    draw_sensi('S(C10)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(R3):")
+                    R3s=1.01*R3
+                    fprs=(m.sqrt(R8/(R2*R3s*R7*C9*C10)))/(2*m.pi)
+                    qprs=R1*m.sqrt(R8*C9/(R2*R3s*R7*C10))
+                    K1s=-R8/R6
+                    ns,ds=getHPTT_ND(fprs, qprs, K1s)
+                    draw_sensi('S(R3)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(R6):")
+                    R6s=1.01*R6
+                    fprs=(m.sqrt(R8/(R2*R3*R7*C9*C10)))/(2*m.pi)
+                    qprs=R1*m.sqrt(R8*C9/(R2*R3*R7*C10))
+                    K1s=-R8/R6s
+                    ns,ds=getHPTT_ND(fprs, qprs, K1s)
+                    draw_sensi('S(R6)',N,D,ns,ds,fp,var)
+                    
+                with d2:
+                    st.write("S(Wp):")
+                    fprs=fp*1.01
+                    qprs=qp
+                    ns,ds=getHPTT_ND(fprs, qprs, K1)
+                    draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(R1):")
+                    R1s=1.01*R1
+                    fprs=(m.sqrt(R8/(R2*R3*R7*C9*C10)))/(2*m.pi)
+                    qprs=R1s*m.sqrt(R8*C9/(R2*R3*R7*C10))
+                    K1s=-R8/R6
+                    ns,ds=getHPTT_ND(fprs, qprs, K1s)
+                    draw_sensi('S(R1)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(R4):")
+                    R4s=1.01*R4
+                    fprs=(m.sqrt(R8/(R2*R3*R7*C9*C10)))/(2*m.pi)
+                    qprs=R1*m.sqrt(R8*C9/(R2*R3*R7*C10))
+                    K1s=-R8/R6
+                    ns,ds=getHPTT_ND(fprs, qprs, K1s)
+                    draw_sensi('S(R4)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(R7):")
+                    R7s=1.01*R7
+                    fprs=(m.sqrt(R8/(R2*R3*R7s*C9*C10)))/(2*m.pi)
+                    qprs=R1*m.sqrt(R8*C9/(R2*R3*R7s*C10))
+                    K1s=-R8/R6
+                    ns,ds=getHPTT_ND(fprs, qprs, K1s)
+                    draw_sensi('S(R7)',N,D,ns,ds,fp,var)
+                    
+                with d3:
+                    st.write("S(C9):")
+                    C9s=1.01*C9
+                    fprs=(m.sqrt(R8/(R2*R3*R7*C9s*C10)))/(2*m.pi)
+                    qprs=R1*m.sqrt(R8*C9s/(R2*R3*R7*C10))
+                    K1s=-R8/R6
+                    ns,ds=getHPTT_ND(fprs, qprs, K1s)
+                    draw_sensi('S(C9)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(R2):")
+                    R2s=1.01*R2
+                    fprs=(m.sqrt(R8/(R2s*R3*R7*C9*C10)))/(2*m.pi)
+                    qprs=R1*m.sqrt(R8*C9/(R2s*R3*R7*C10))
+                    K1s=-R8/R6
+                    ns,ds=getHPTT_ND(fprs, qprs, K1s)
+                    draw_sensi('S(R2)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(R5):")
+                    R5s=1.01*R5
+                    fprs=(m.sqrt(R8/(R2*R3*R7*C9*C10)))/(2*m.pi)
+                    qprs=R1*m.sqrt(R8*C9/(R2*R3*R7*C10))
+                    K1s=-R8/R6
+                    ns,ds=getHPTT_ND(fprs, qprs, K1s)
+                    draw_sensi('S(R5)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(R8):")
+                    R8s=1.01*R8
+                    fprs=(m.sqrt(R8s/(R2*R3*R7*C9*C10)))/(2*m.pi)
+                    qprs=R1*m.sqrt(R8s*C9/(R2*R3*R7*C10))
+                    K1s=-R8s/R6
+                    ns,ds=getHPTT_ND(fprs, qprs, K1s)
+                    draw_sensi('S(R8)',N,D,ns,ds,fp,var) 
+                
             elif typ=='Passe-Bande':
                 sel+='(passe-bande)'
                 [fp,qp,C]=Param(['fp','Qp','C=C9=C10'],100,p)
                 
                 R_optimal=1/(2*m.pi*fp*C)
-                R_optimalint=int(R_optimal)
-                minval=R_optimalint-10
-                maxval=R_optimalint+10
-                Rd=st.slider("Choix de Rd=R2=R3=R7 proche de R optimale calculée sur base de fp et C.",minval,maxval,R_optimalint,key=clès+8)
+                Rd=R_optimal
                 C9=C
                 C10=C
                 R2=Rd
@@ -1067,6 +1983,106 @@ def filter(p):
                 Aff(N, D,n,d,p)
                 data=[fp,qp,R1m,R2m,R3m,R4m,R7m,R8m,C9m,C10m]
                 name=['fp','Qp','R1','R2','R3','R4','R7','R8','C9','C10']
+                
+                st.header("Analyse de sensibilité")
+                sensi=st.expander('Afficher la sensibilité')
+                d1,d2,d3=sensi.columns([1,1,1])
+                var=1
+                with d1:
+                    st.write("S(Qp):") 
+                    fprs=fp
+                    qprs=1.01*qp
+                    ns,ds=getBPTT_ND(fprs, qprs, K2)
+                    draw_sensi('S(Qp)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(C10):")
+                    C10s=1.01*C10
+                    fprs=(m.sqrt(R8/(R2*R3*R7*C9*C10s)))/(2*m.pi)
+                    qprs=R1*m.sqrt(R8*C9/(R2*R3*R7*C10s))
+                    K2s=R8/(C9*R7*R4)
+                    ns,ds=getBPTT_ND(fprs, qprs, K2s)
+                    draw_sensi('S(C10)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(R3):")
+                    R3s=1.01*R3
+                    fprs=(m.sqrt(R8/(R2*R3s*R7*C9*C10)))/(2*m.pi)
+                    qprs=R1*m.sqrt(R8*C9/(R2*R3s*R7*C10))
+                    K2s=R8/(C9*R7*R4)
+                    ns,ds=getBPTT_ND(fprs, qprs, K2s)
+                    draw_sensi('S(R3)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(R6):")
+                    R6s=1.01*R6
+                    fprs=(m.sqrt(R8/(R2*R3*R7*C9*C10)))/(2*m.pi)
+                    qprs=R1*m.sqrt(R8*C9/(R2*R3*R7*C10))
+                    K2s=R8/(C9*R7*R4)
+                    ns,ds=getBPTT_ND(fprs, qprs, K2s)
+                    draw_sensi('S(R6)',N,D,ns,ds,fp,var)
+                    
+                with d2:
+                    st.write("S(Wp):")
+                    fprs=fp*1.01
+                    qprs=qp
+                    ns,ds=getBPTT_ND(fprs, qprs, K2)
+                    draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(R1):")
+                    R1s=1.01*R1
+                    fprs=(m.sqrt(R8/(R2*R3*R7*C9*C10)))/(2*m.pi)
+                    qprs=R1s*m.sqrt(R8*C9/(R2*R3*R7*C10))
+                    K2s=R8/(C9*R7*R4)
+                    ns,ds=getBPTT_ND(fprs, qprs, K2s)
+                    draw_sensi('S(R1)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(R4):")
+                    R4s=1.01*R4
+                    fprs=(m.sqrt(R8/(R2*R3*R7*C9*C10)))/(2*m.pi)
+                    qprs=R1*m.sqrt(R8*C9/(R2*R3*R7*C10))
+                    K2s=R8/(C9*R7*R4s)
+                    ns,ds=getBPTT_ND(fprs, qprs, K2s)
+                    draw_sensi('S(R4)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(R7):")
+                    R7s=1.01*R7
+                    fprs=(m.sqrt(R8/(R2*R3*R7s*C9*C10)))/(2*m.pi)
+                    qprs=R1*m.sqrt(R8*C9/(R2*R3*R7s*C10))
+                    K2s=R8/(C9*R7s*R4)
+                    ns,ds=getBPTT_ND(fprs, qprs, K2s)
+                    draw_sensi('S(R7)',N,D,ns,ds,fp,var)
+                    
+                with d3:
+                    st.write("S(C9):")
+                    C9s=1.01*C9
+                    fprs=(m.sqrt(R8/(R2*R3*R7*C9s*C10)))/(2*m.pi)
+                    qprs=R1*m.sqrt(R8*C9s/(R2*R3*R7*C10))
+                    K2s=R8/(C9s*R7*R4)
+                    ns,ds=getBPTT_ND(fprs, qprs, K2s)
+                    draw_sensi('S(C9)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(R2):")
+                    R2s=1.01*R2
+                    fprs=(m.sqrt(R8/(R2s*R3*R7*C9*C10)))/(2*m.pi)
+                    qprs=R1*m.sqrt(R8*C9/(R2s*R3*R7*C10))
+                    K2s=R8/(C9*R7*R4)
+                    ns,ds=getBPTT_ND(fprs, qprs, K2s)
+                    draw_sensi('S(R2)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(R5):")
+                    R5s=1.01*R5
+                    fprs=(m.sqrt(R8/(R2*R3*R7*C9*C10)))/(2*m.pi)
+                    qprs=R1*m.sqrt(R8*C9/(R2*R3*R7*C10))
+                    K2s=R8/(C9*R7*R4)
+                    ns,ds=getBPTT_ND(fprs, qprs, K2s)
+                    draw_sensi('S(R5)',N,D,ns,ds,fp,var)
+                    
+                    st.write("S(R8):")
+                    R8s=1.01*R8
+                    fprs=(m.sqrt(R8s/(R2*R3*R7*C9*C10)))/(2*m.pi)
+                    qprs=R1*m.sqrt(R8s*C9/(R2*R3*R7*C10))
+                    K2s=R8s/(C9*R7*R4)
+                    ns,ds=getBPTT_ND(fprs, qprs, K2s)
+                    draw_sensi('S(R8)',N,D,ns,ds,fp,var) 
+                
             elif typ=='Réjecteur de fréquence':
                 sel+='(réjecteur de fréquence)'
                 [fp,fz,qp,C]=Param(['fp','fz','Qp','C=C9=C10'],100,p)
@@ -1074,10 +2090,7 @@ def filter(p):
                     st.markdown(":warning: **fz doit être différente de fp**")
                 else:
                     R_optimal=1/(2*m.pi*fp*C)
-                    R_optimalint=int(R_optimal)
-                    minval=R_optimalint-10
-                    maxval=R_optimalint+10
-                    Rd=st.slider("Choix de Rd=R2=R3=R7 proche de R optimale calculée sur base de fp et C.",minval,maxval,R_optimalint,key=clès+12)
+                    Rd=R_optimal
                     C9=C
                     C10=C
                     R2=Rd
@@ -1101,4 +2114,126 @@ def filter(p):
                     Aff(N, D,n,d,p)
                     data=[fz,fp,qp,R1m,R2m,R3m,R4m,R5m,R6m,R7m,R8m,C9m,C10m]
                     name=['fz','fp','Qp','R1','R2','R3','R4','R5','R6','R7','R8','C9','C10']
+                    
+                    st.header("Analyse de sensibilité")
+                    sensi=st.expander('Afficher la sensibilité')
+                    d1,d2,d3=sensi.columns([1,1,1])
+                    var=1
+                    with d1:
+                        st.write("S(Qp):") 
+                        fprs=fp
+                        qprs=1.01*qp
+                        Ks=K
+                        fzrs=fz
+                        ns,ds=getBRTT_ND(fprs, qprs, Ks,fzrs)
+                        draw_sensi('S(Qp)',N,D,ns,ds,fp,var)
+                        
+                        st.write("S(C10):")
+                        C10s=1.01*C10
+                        fprs=(m.sqrt(R8/(R2*R3*R7*C9*C10s)))/(2*m.pi)
+                        qprs=R1*m.sqrt(R8*C9/(R2*R3*R7*C10s))
+                        fzrs=(m.sqrt(R6/(R3*R5*R7*C9*C10s)))/(2*m.pi)
+                        Ks=-R8/R6
+                        ns,ds=getBRTT_ND(fprs, qprs, Ks,fzrs)
+                        draw_sensi('S(C10)',N,D,ns,ds,fp,var)
+                        
+                        st.write("S(R3):")
+                        R3s=1.01*R3
+                        fprs=(m.sqrt(R8/(R2*R3s*R7*C9*C10)))/(2*m.pi)
+                        qprs=R1*m.sqrt(R8*C9/(R2*R3s*R7*C10))
+                        fzrs=(m.sqrt(R6/(R3s*R5*R7*C9*C10)))/(2*m.pi)
+                        Ks=-R8/R6
+                        ns,ds=getBRTT_ND(fprs, qprs, Ks,fzrs)
+                        draw_sensi('S(R3)',N,D,ns,ds,fp,var)
+                        
+                        st.write("S(R6):")
+                        R6s=1.01*R6
+                        fprs=(m.sqrt(R8/(R2*R3*R7*C9*C10)))/(2*m.pi)
+                        qprs=R1*m.sqrt(R8*C9/(R2*R3*R7*C10))
+                        fzrs=(m.sqrt(R6s/(R3*R5*R7*C9*C10)))/(2*m.pi)
+                        Ks=-R8/R6s
+                        ns,ds=getBRTT_ND(fprs, qprs, Ks,fzrs)
+                        draw_sensi('S(R6)',N,D,ns,ds,fp,var)
+                        
+                        st.write("S(Wz):")
+                        fprs=fp
+                        qprs=qp
+                        Ks=K
+                        fzrs=fz*1.01
+                        ns,ds=getBRTT_ND(fprs, qprs, Ks,fzrs)
+                        draw_sensi('S(Wz)',N,D,ns,ds,fp,var)
+                        
+                    with d2:
+                        st.write("S(Wp):")
+                        fprs=fp*1.01
+                        qprs=qp
+                        Ks=K
+                        fzrs=fz
+                        ns,ds=getBRTT_ND(fprs, qprs, Ks,fzrs)
+                        draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+                        
+                        st.write("S(R1):")
+                        R1s=1.01*R1
+                        fprs=(m.sqrt(R8/(R2*R3*R7*C9*C10)))/(2*m.pi)
+                        qprs=R1s*m.sqrt(R8*C9/(R2*R3*R7*C10))
+                        fzrs=(m.sqrt(R6/(R3*R5*R7*C9*C10)))/(2*m.pi)
+                        Ks=-R8/R6
+                        ns,ds=getBRTT_ND(fprs, qprs, Ks,fzrs)
+                        draw_sensi('S(R1)',N,D,ns,ds,fp,var)
+                        
+                        st.write("S(R4):")
+                        R4s=1.01*R4
+                        fprs=(m.sqrt(R8/(R2*R3*R7*C9*C10)))/(2*m.pi)
+                        qprs=R1*m.sqrt(R8*C9/(R2*R3*R7*C10))
+                        fzrs=(m.sqrt(R6/(R3*R5*R7*C9*C10)))/(2*m.pi)
+                        Ks=-R8/R6
+                        ns,ds=getBRTT_ND(fprs, qprs, Ks,fzrs)
+                        draw_sensi('S(R4)',N,D,ns,ds,fp,var)
+                        
+                        st.write("S(R7):")
+                        R7s=1.01*R7
+                        fprs=(m.sqrt(R8/(R2*R3*R7s*C9*C10)))/(2*m.pi)
+                        qprs=R1*m.sqrt(R8*C9/(R2*R3*R7s*C10))
+                        fzrs=(m.sqrt(R6/(R3*R5*R7s*C9*C10)))/(2*m.pi)
+                        Ks=-R8/R6
+                        ns,ds=getBRTT_ND(fprs, qprs, Ks,fzrs)
+                        draw_sensi('S(R7)',N,D,ns,ds,fp,var)
+                        
+                    with d3:
+                        st.write("S(C9):")
+                        C9s=1.01*C9
+                        fprs=(m.sqrt(R8/(R2*R3*R7*C9s*C10)))/(2*m.pi)
+                        qprs=R1*m.sqrt(R8*C9s/(R2*R3*R7*C10))
+                        fzrs=(m.sqrt(R6/(R3*R5*R7*C9s*C10)))/(2*m.pi)
+                        Ks=-R8/R6
+                        ns,ds=getBRTT_ND(fprs, qprs, Ks,fzrs)
+                        draw_sensi('S(C9)',N,D,ns,ds,fp,var)
+                        
+                        st.write("S(R2):")
+                        R2s=1.01*R2
+                        fprs=(m.sqrt(R8/(R2s*R3*R7*C9*C10)))/(2*m.pi)
+                        qprs=R1*m.sqrt(R8*C9/(R2s*R3*R7*C10))
+                        fzrs=(m.sqrt(R6/(R3*R5*R7*C9*C10)))/(2*m.pi)
+                        Ks=-R8/R6
+                        ns,ds=getBRTT_ND(fprs, qprs, Ks,fzrs)
+                        draw_sensi('S(R2)',N,D,ns,ds,fp,var)
+                        
+                        st.write("S(R5):")
+                        R5s=1.01*R5
+                        fprs=(m.sqrt(R8/(R2*R3*R7*C9*C10)))/(2*m.pi)
+                        qprs=R1*m.sqrt(R8*C9/(R2*R3*R7*C10))
+                        fzrs=(m.sqrt(R6/(R3*R5s*R7*C9*C10)))/(2*m.pi)
+                        Ks=-R8/R6
+                        ns,ds=getBRTT_ND(fprs, qprs, Ks,fzrs)
+                        draw_sensi('S(R5)',N,D,ns,ds,fp,var)
+                        
+                        st.write("S(R8):")
+                        R8s=1.01*R8
+                        fprs=(m.sqrt(R8s/(R2*R3*R7*C9*C10)))/(2*m.pi)
+                        qprs=R1*m.sqrt(R8s*C9/(R2*R3*R7*C10))
+                        fzrs=(m.sqrt(R6/(R3*R5*R7*C9*C10)))/(2*m.pi)
+                        Ks=-R8s/R6
+                        ns,ds=getBRTT_ND(fprs, qprs, Ks,fzrs)
+                        draw_sensi('S(R8)',N,D,ns,ds,fp,var) 
+                        
     return sel,image,name,data
