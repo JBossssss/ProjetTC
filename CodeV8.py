@@ -241,7 +241,7 @@ def filter(p):
                     R11=R1
                     R12=1e90
                     K=K0
-                if K0-k<=0.00:
+                elif K0-k<=0.00:
                     R11=R1
                     R12=1e90
                     K=K0
