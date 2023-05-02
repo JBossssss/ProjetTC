@@ -7,14 +7,8 @@ import streamlit as st
 import math as m
 import numpy as np
 import matplotlib.pyplot as plt
-import scipy.signal as sc
-from  matplotlib import patches
-from matplotlib.figure import Figure
-from matplotlib import rcParams
-import plotly
 from fpdf import FPDF
 from PIL import Image
-import tempfile
 
 def Param(TAB,maxq,p,maxk=None):
     p=p+150*p
