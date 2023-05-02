@@ -3,11 +3,6 @@
 Created on Tue Feb 28 09:48:06 2023
 @author: Loren
 """
-
-
-'''SANS LES FORMS'''
-
-
 import streamlit as st
 import math as m
 import numpy as np
@@ -18,8 +13,8 @@ from matplotlib.figure import Figure
 from matplotlib import rcParams
 import plotly
 from fpdf import FPDF
-
-
+from PIL import Image
+import tempfile
 
 def Param(TAB,maxq,p,maxk=None):
     p=p+150*p
@@ -34,6 +29,7 @@ def Param(TAB,maxq,p,maxk=None):
     for i in range(len(TAB)):
         stp=1.00
         form='%0.2f'
+        minv=0.001
         if TAB[i][0]=='f':
             h=h+1
             Name='**Choix de '
@@ -66,6 +62,7 @@ def Param(TAB,maxq,p,maxk=None):
                 v=0.000000010
             stp=0.000001
             maxv=None
+            minv=1e-13
             form='%0.10f'
             unit='Farads'
             c=col2
@@ -86,16 +83,18 @@ def Param(TAB,maxq,p,maxk=None):
             Name+='**'
             v=1000.00
             maxv=None
+            minv=10
             form=None
             unit='Ohms'
             c=col3
         with c2:    
-            RET.append(c.number_input(Name,min_value=0.00,value=v,step=stp,format=form,key=p+i))
-        with c1:
-            st.write('Valeur de',TAB[i],': ',RET[i],unit)
-        if maxv==True:
-            if RET[i]>maxq:
-                warning('Le Q est supérieur à la valeur recommandée')
+            P=c.number_input(Name,min_value=minv,value=v,step=stp,format=form,key=p+i)
+            RET.append(P)
+            with c1:
+                st.write('Valeur de',TAB[i],': ',RET[i],unit)
+            if maxv==True:
+                if RET[i]>maxq:
+                    warning('Le Q est supérieur à la valeur recommandée')
     #case.form_submit_button('**Valider les données**:+1:')
             
     return RET
@@ -114,17 +113,22 @@ def Result(NAME,DATA,p):
                 if  NAME[i][0]=='K':
                     pass
                 elif NAME[i][0]=='C':
+                    minv=1e-13
                     with modif:
                         f=i%3
-                        if f==0: DATA[i]=d1.number_input(NAME[i],min_value=0.00,value=float(DATA[i]),format='%0.11f',step=0.01*DATA[i],key=p+i)
-                        elif f==1 :DATA[i]=d2.number_input(NAME[i],min_value=0.00,value=float(DATA[i]),format='%0.11f',step=0.01*DATA[i],key=p+i)
-                        else:DATA[i]=d3.number_input(NAME[i],min_value=0.00,value=float(DATA[i]),format='%0.11f',step=0.01*DATA[i],key=p+i)
+                        if f==0: DATA[i]=d1.number_input(NAME[i],min_value=minv,value=float(DATA[i]),format='%0.11f',step=0.01*DATA[i],key=p+i)
+                        elif f==1 :DATA[i]=d2.number_input(NAME[i],min_value=minv,value=float(DATA[i]),format='%0.11f',step=0.01*DATA[i],key=p+i)
+                        else:DATA[i]=d3.number_input(NAME[i],min_value=minv,value=float(DATA[i]),format='%0.11f',step=0.01*DATA[i],key=p+i)
                 else:
+                    minv=0.001
                     with modif:
                         f=i%3
-                        if f==0: DATA[i]=d1.number_input(NAME[i],min_value=0.00,value=float(DATA[i]),format='%0.2f',step=0.01*DATA[i],key=p+i)
-                        elif f==1 :DATA[i]=d2.number_input(NAME[i],min_value=0.00,value=float(DATA[i]),format='%0.2f',step=0.01*DATA[i],key=i+p)
-                        else:DATA[i]=d3.number_input(NAME[i],min_value=0.00,value=float(DATA[i]),format='%0.2f',step=0.01*DATA[i],key=i+p)
+                        if f==0: DATA[i]=d1.number_input(NAME[i],min_value=minv,value=float(DATA[i]),format='%0.2f',step=0.01*DATA[i],key=p+i)
+                        elif f==1 :DATA[i]=d2.number_input(NAME[i],min_value=minv,value=float(DATA[i]),format='%0.2f',step=0.01*DATA[i],key=i+p)
+                        else:DATA[i]=d3.number_input(NAME[i],min_value=minv,value=float(DATA[i]),format='%0.2f',step=0.01*DATA[i],key=i+p)
+            if DATA[i] ==0.00:
+                warning('Aucun de ces composants ne peut être nul')   
+                DATA[i]=1e-20
             if NAME[i][0]=='C':
                 Name='**'
                 Name+=NAME[i]
@@ -171,9 +175,10 @@ def Aff(N,D,n,d,p):
     w2=m.log10(m.sqrt(D[2]))-z-0.1
     a,b=st.columns([2,1])
     with a:
-        draw_supp(N, D, n, d, w1, w2)
+        plot=draw_supp(N, D, n, d, w1, w2)
     with b:
         zplanesupp('', N, D, n, d)
+    return plot
     
 def Write_fnT(N,D):
     N_str=''
@@ -230,7 +235,7 @@ def getBRTT_ND(fp,qp,k,fz):
     D=[1,wp/qp,wp**2]
     return N,D
 
-def draw_repfreq(leg,num, den, w_min, w_max):
+def draw_supp(N, D,n,d,w_min, w_max):
 
     '''
     Dessine la réponse en fréquence du filtre en fonction des polynômes de H(p) = Num(p)/Den(p) entre
@@ -243,38 +248,13 @@ def draw_repfreq(leg,num, den, w_min, w_max):
     fig,ax = plt.subplots(figsize=(10,5))
     
     # plt.figure()
-    num = np.array(num) 
-    den = np.array(den)
-
+    N = np.array(N) 
+    D = np.array(D)
+    n=np.array(n)
+    d=np.array(d)
     wIn = np.logspace(w_min, w_max, 100)
-    wOut, hOut = sc.freqs(num, den, wIn)
-    fOut=wOut/(2*m.pi)
-    plt.semilogx(fOut, 20*np.log10(np.abs(hOut)))
-    plt.xlabel('Fréquence [Hz]')
-    plt.ylabel('Amplitude [dB]')
-    plt.legend([leg])
-    plt.show()
-    st.pyplot(fig,ax)
-def draw_supp(num, den,N,D,w_min, w_max):
-
-    '''
-    Dessine la réponse en fréquence du filtre en fonction des polynômes de H(p) = Num(p)/Den(p) entre
-    les valeurs 10^w_min et 10^w_max. Ainsi, si w_min = 0 et w_max = 1, la courbe de Bode sera dressée
-    entre 10^0 et 10^1 en échelle logarithmique
-    Example : H(p) = (p+1)/(p+2) 
-    inputs : num=[1,1], den=[1,2] (<= facteurs multiplicatifs du polynôme), w_min = 0, w_max = 1
-    outputs : None
-    '''
-    fig,ax = plt.subplots(figsize=(10,5))
-    
-    # plt.figure()
-    num = np.array(num) 
-    den = np.array(den)
-    N=np.array(N)
-    D=np.array(D)
-    wIn = np.logspace(w_min, w_max, 100)
-    wOut, hOut = sc.freqs(num, den, wIn)
-    w2,h2=sc.freqs(N, D,wIn)
+    wOut, hOut = sc.freqs(N, D, wIn)
+    w2,h2=sc.freqs(n, d,wIn)
     
     plt.semilogx(wOut/(2*m.pi), 20*np.log10(np.abs(hOut)),color=[0.5,0,0.5])
     plt.semilogx(w2/(2*m.pi),20*np.log10(np.abs(h2)),color=[1,0.5,0])
@@ -282,9 +262,12 @@ def draw_supp(num, den,N,D,w_min, w_max):
     plt.ylabel('Amplitude [dB]')
     plt.legend(['Courbe Théorique','Courbe Réelle'])
     plt.show()
+    Image.open('graphe.png')
     st.pyplot(fig,ax)
-    
-def zplane(leg,num,den,r=2.5,filename=None):
+    return 'graphe.png'
+ 
+
+def zplanesupp(leg,num,den,N,D,r=2.5):
 
     """Plot the complex z-plane given a transfer function.
     inputs :
@@ -293,99 +276,8 @@ def zplane(leg,num,den,r=2.5,filename=None):
     - filename (<= nom de la figure à sauvegarder. Si =None, l'affiche et ne la sauvegarde pas)
     outputs : zéros, pôles, k (facteur multiplicatif)
     """
-    r=max(num[2],den[2])
-    if num[0]!=0.00:
-        r=max(num[2]/num[0],den[2])
-    r=m.sqrt(r)*1.1
-    fig,ax = plt.subplots(figsize=(6,4))
-    b = np.array(num)
-    a = np.array(den)
-    # get a figure/plot
-    ax = plt.subplot(111)
-
-    # create the unit circle
-    # uc = patches.Circle((0,0), radius=1, fill=False,
-    #                     color='black', ls='dashed')
-    # ax.add_patch(uc)
-
-    # The coefficients are less than 1, normalize the coeficients
-    # if np.max(b) > 1:
-    #     kn = np.max(b)
-    #     b = b/float(kn)
-    # else:
-    #     kn = 1
-
-    # if np.max(a) > 1:
-    #     kd = np.max(a)
-    #     a = a/float(kd)
-    # else:
-    #     kd = 1
-        
-    # Get the poles and zeros
-    p = np.roots(a)
-    z = np.roots(b)
-    k = 1
-    # Plot the zeros and set marker properties    
-    t1 = plt.plot(z.real, z.imag, 'go', ms=10)
-    plt.setp( t1, markersize=10.0, markeredgewidth=1.0,
-              markeredgecolor='k', markerfacecolor='g')
-
-    # Plot the poles and set marker properties
-    t2 = plt.plot(p.real, p.imag, 'rx', ms=10)
-    plt.setp( t2, markersize=12.0, markeredgewidth=3.0,
-              markeredgecolor='r', markerfacecolor='r')
-
-    ax.spines['left'].set_position('center')
-    ax.spines['bottom'].set_position('center')
-    ax.spines['right'].set_visible(False)
-    ax.spines['top'].set_visible(False)
     
-    # for i in range(len(z)):
-    #     maxzreal=0
-    #     if z.real(i)>=maxzreal:
-    #         maxzreal=z.real(i)
-    # for i in range(len(z)):
-    #     maxzimag=0
-    #     if z.imag(i)>=maxzimag:
-    #         maxzimag=z.imag(i)
-    # for i in range(len(p)):
-    #     maxpimag=0
-    #     if p.imag(i)>=maxpimag:
-    #         maxpimag=p.imag(i)
-    # for i in range(len(p)):
-    #     maxpreal=0
-    #     if p.real(i)>=maxpreal:
-    #         maxpreal=p.real(i)
-    
-    # absc=max(maxzreal,maxpreal)*1.1
-    # ordo=max(maxzimag,maxpimag)*1.1
-    
-    plt.axis('scaled')
-    plt.axis([-r,r,-r,r])
-    # ticks = [-2*r,-1.5*r,-1*r,-0.5*r,0.5*r,1*r,1.5*r]; plt.xticks(ticks); plt.yticks(ticks)
-    # absc=max(z.real.all(),p.real.all())*10
-    # ordo=max(z.imag.all(),p.imag.all())*10
-    # st.write(absc,ordo,'pute')
-    # plt.axis('scaled')
-    # plt.axis([-ordo,ordo, -ordo, ordo])
-
-    if filename is None:
-        plt.title(leg)
-        plt.show()
-    else:
-        plt.savefig(filename)
-    st.pyplot(fig,ax)
-    return z,p,k             
-
-def zplanesupp(leg,num,den,N,D,r=2.5,filename=None):
-
-    """Plot the complex z-plane given a transfer function.
-    inputs :
-    - num, den (<= facteurs multiplicatifs du polynôme)
-    - r (<= échelle de la figure)
-    - filename (<= nom de la figure à sauvegarder. Si =None, l'affiche et ne la sauvegarde pas)
-    outputs : zéros, pôles, k (facteur multiplicatif)
-    """
+    filename="Pôles et zéros"
     r=max(num[2],den[2],N[2],D[2])
     if num[0]!=0.00:
         r=max(num[2]/num[0],den[2],N[2]/N[0],D[2])
@@ -395,15 +287,9 @@ def zplanesupp(leg,num,den,N,D,r=2.5,filename=None):
     a = np.array(den)
     d = np.array(N)
     c = np.array(D)
-    # get a figure/plot
+
     ax = plt.subplot(111)
 
-    # create the unit circle
-    # uc = patches.Circle((0,0), radius=1, fill=False,
-    #                     color='black', ls='dashed')
-    # ax.add_patch(uc)
-
-    # The coefficients are less than 1, normalize the coeficients
     if np.max(b) > 1:
         kn = np.max(b)
         b = b/float(kn)
@@ -462,19 +348,15 @@ def zplanesupp(leg,num,den,N,D,r=2.5,filename=None):
     plt.axis([-r,r, -r, r])
     #ticks = [-2*r,-1.5*r,-1*r,-0.5*r,0.5*r,1*r,1.5*r]; plt.xticks(ticks); plt.yticks(ticks)
 
-    if filename is None:
-        plt.title(leg)
-        plt.show()
-    else:
-        plt.savefig(filename)
+    plt.legend(['Zéros théoriques','Pôles théoriques','Zéros réels','Pôles réels'],fontsize='small')
+    plt.savefig(filename)
     st.pyplot(fig,ax)
-    print(z,p)
     return z,p,k             
 
 def sauvegarder(p):
     col1,col2=st.columns([7,2])
     with col2:
-        if st.checkbox('**Sauvegarder ce filtre**',key=p+23458):
+        if st.checkbox('**Sauvegarder ce filtre** (voir sidebar)',key=p+23458):
             return True
 def download_pdf(DATA):
     # Création du PDF
@@ -486,7 +368,7 @@ def download_pdf(DATA):
         if j != 0:
             pdf.add_page()  # Ajouter une nouvelle page pour chaque itération sauf la première
         p=1
-        [sel,image,name1, dat1, p]=DATA[j]
+        [sel,image,name1, dat1, p,plot]=DATA[j]
     
         text='FILTRE '
         text+=str(p)
@@ -498,8 +380,8 @@ def download_pdf(DATA):
         pdf.ln()
         
         # Ajout de l'image
-        pdf.image(image, x=35, y=175, w=150, h=100)
-        
+        pdf.image(image, x=85, y=55, w=100, h=80)
+        pdf.image(plot, x=5, y=175, w=200, h=120)
         # Liste des données
     
         for i in range(len(name1)):
@@ -637,9 +519,9 @@ def standardize(c, series,typ):
    
     if typ=='R':
         vmax=1e7
-        vmin=1
+        vmin=10
     elif typ=='C':
-        vmax=10
+        vmax=1e-3
         vmin=1e-13
        
     E24_VALUES = [100, 110, 120, 130, 150, 160, 180, 200, 220, 240, 270, 300, 330, 360, 390, 430, 470, 510, 560, 620, 680, 750, 820, 910]
