@@ -1,8 +1,5 @@
 numpy 
-matplotlib 
-soundfile 
+matplotlib  
 streamlit
-plotly
-scipy
 fpdf
 PIL
