@@ -1,12 +1,10 @@
+
+
 # -*- coding: utf-8 -*-
 """
 Created on Wed Feb 22 18:33:13 2023
 @author: Jean Bériot
-Sensibilté S en fct R ou C (voir cours) (H delta -H)/delta R (ou delta C)
-Utiliser table de resistance et capa normalisée (décade,...) = bouton pour tout chnager d'un coup'
-Pouvoir augmenter le Qp dans tout les cas
-Pole et Zéro superposés
-Delyanis et friend 
+ 
 """
 from ProjUtilsV8 import *
 import streamlit as st
@@ -22,6 +20,7 @@ def filter(p):
     name=[]
     data=[]
     image=''
+    plot=''
     if sel =='LPLQ (Passe-bas de Sallen-Key, Q<2)':
        image= 'iLP-LQ.jpg'
        st.image(image,width=800)
@@ -56,7 +55,7 @@ def filter(p):
                    qpr=(m.sqrt((R3m*C2m)/(R1m*C4m)))/(1+R3m/R1m)
                    n,d=getLP_ND(fpr, qpr, Km)    
                    N,D=getLP_ND(fp, qp, k)
-                   Aff(N, D, n, d,p)
+                   plot=Aff(N, D, n, d,p)
                    
                    name=['fp','Qp','R11','R12','R3','C2','C4','GSP']
                    data=[fpr,qpr,R11m,R12m,R3m,C2m,C4m,GSPm]
@@ -145,7 +144,7 @@ def filter(p):
             qpr=(m.sqrt((R4m*C1m)/(R2m*C3m)))/(1+C1m/C3m)     
             n,d=getHP_ND(fpr, qpr, Km) 
             N,D=getHP_ND(fp, qp, K)
-            Aff(N, D, n, d,p)
+            plot=Aff(N, D, n, d,p)
             
             name=['fp','Qp','C11','C12','C3','R2','R4','GSP']
             data=[fpr,qpr,C11m,C12m,C3m,R2m,R4m,GSPm]
@@ -258,7 +257,7 @@ def filter(p):
                 qpr=(m.sqrt((R3m*C2m)/(R1m*C4m)))/(1+R3m/R1m-R6m*C2m/(R5m*C4m))
                 n,d=getLP_ND(fpr, qpr, Km)     
                 N,D=getLP_ND(fp, qp, K)
-                Aff(N, D, n, d,p)
+                plot=Aff(N, D, n, d,p)
                 
                 name=['fp','Qp','R11','R12','R3','R5','R6','C2','C4','GSP']
                 data=[fpr,qpr,R11m,R12m,R3m,R5m,R6m,C2m,C4m,GSPm]
@@ -372,7 +371,7 @@ def filter(p):
             Km=(C11m/(C11m+C12m))*(1+R6m/R5m)
             n,d=getHP_ND(fpr, qpr, Km)                                     
             N,D=getHP_ND(fp, qp, K)
-            Aff(N, D, n, d,p)
+            plot=Aff(N, D, n, d,p)
             
             name=['fp','Qp','R2','R4','R5','R6','C11','C12','C3','GSP']
             data=[fpr,qpr,R2m,R4m,R5m,R6m,C11m,C12m,C3m,GSPm]
@@ -523,7 +522,7 @@ def filter(p):
                         fzr=wz/(2*m.pi)
                         n,d=getBR_ND(fpr, qpr, Km, fzr)
                         N,D=getBR_ND(fp, qp, K, fz)
-                        Aff(N, D,n,d,p)
+                        plot=Aff(N, D,n,d,p)
                         
                         name=['fp','Qp','R5','R6','R7','R8','R9','C1','C2','C3','C4','R10','K','GSP']
                         data=[fpr,qpr,R5m,R6m,R7m,R8m,R9m,R10m,C1m,C2m,C3m,C4m,Km,GSPm]
@@ -696,7 +695,7 @@ def filter(p):
             fpr=wp/(2*m.pi)
             n,d=getPB_ND(fpr, qpr, Km)
             N,D=getPB_ND(fp, qp, K)
-            Aff(N, D,n,d,p)
+            plot=Aff(N, D,n,d,p)
             name=['fp','Qp','R11','R4','C2','C3','GSP']
             data=[fpr,qpr, R11m,R4m,C2m,C3m,GSPm]
             
@@ -796,7 +795,7 @@ def filter(p):
                 fpr=wp/(2*m.pi)
                 N,D=getPB_ND(fp, qp, K)
                 n,d=getPB_ND(fpr, qpr, Km)
-                Aff(N, D,n,d,p)
+                plot=Aff(N, D,n,d,p)
                 name=['fp','Qp','R2','R3','C11','C12','C4','GSP']
                 data=[fpr,qpr, R2m,R3m,C11m,C12m,C4m,GSPm]
                 
@@ -911,7 +910,7 @@ def filter(p):
             fpr=wp/(2*m.pi)
             N,D=getPB_ND(fp, qp, K)
             n,d=getPB_ND(fpr, qpr, Km)
-            Aff(N, D,n,d,p)
+            plot=Aff(N, D,n,d,p)
             name=['fp','Qp','R11','R12','R4','R5','C2','C3','P','GSP']
             data=[fpr,qpr, R11m,R12m,R4m,R5m,C2m,C3m,Pm,GSPm]
             
@@ -1024,7 +1023,7 @@ def filter(p):
             fpr=wp/(2*m.pi)
             N,D=getPB_ND(fp, qp, K)
             n,d=getPB_ND(fpr, qpr, Km)
-            Aff(N, D,n,d,p)
+            plot=Aff(N, D,n,d,p)
             name=['fp','Qp','R2','R3','R5','C11','C12','C4','R6  (Optionnel)','P','GSP']
             data=[fpr,qpr, R2m,R3m,R5m,C11m,C12m,C4m,R6m,Pm,GSPm]
             
@@ -1139,7 +1138,7 @@ def filter(p):
             fpr=wp/(2*m.pi)
             N,D=getLP_ND(fp, qp, K)
             n,d=getLP_ND(fpr, qpr, Km)
-            Aff(N, D,n,d,p)
+            plot=Aff(N, D,n,d,p)
             name=['fp','Qp','R1','R2','R3','R6','R7','C1','C4']
             data=[fpr,qpr, R1m,R2m,R3m,R6m,R7m,C1m,C4m]
             
@@ -1250,8 +1249,8 @@ def filter(p):
             fpr=wp/(2*m.pi)
             N,D=getPB_ND(fp, qp, K)
             n,d=getPB_ND(fpr, qpr, Km)
-            Aff(N, D,n,d,p)
-            data=[fp,qp,R1m,R2m,R4m,R6m,R7m,C3m,C8m]
+            plot=Aff(N, D,n,d,p)
+            data=[fpr,qpr,R1m,R2m,R4m,R6m,R7m,C3m,C8m]
             name=['fp','Qp','R1','R2','R4','R6','R7','C3','C8']
             
             st.header("Analyse de sensibilité")
@@ -1361,8 +1360,8 @@ def filter(p):
             fpr=wp/(2*m.pi)
             N,D=getHP_ND(fp, qp, K)
             n,d=getHP_ND(fpr, qpr, Km)
-            Aff(N, D,n,d,p)
-            data=[fp,qp,R1m,R2m,R4m,R6m,R8m,C3m,C7m]
+            plot=Aff(N, D,n,d,p)
+            data=[fpr,qpr,R1m,R2m,R4m,R6m,R8m,C3m,C7m]
             name=['fp','Qp','R1','R2','R4','R6','R8','C3','C7']
             
             st.header("Analyse de sensibilité")
@@ -1473,8 +1472,8 @@ def filter(p):
                 fzr=wzrlpn/(2*m.pi)
                 N,D=getBR_ND(fp, qp, 1, fz)
                 n,d=getBR_ND(fpr, qpr, 1, fzr)
-                Aff(N, D,n,d,p)
-                data=[fz,fp,qp,R1m,R3m,R4m,R5m,R8m,C2m,C7m]
+                plot=Aff(N, D,n,d,p)
+                data=[fzr,fpr,qpr,R1m,R3m,R4m,R5m,R8m,C2m,C7m]
                 name=['fz','fp','Qp','R1','R3','R4','R5','R8','C2','C7']
                 
                 st.header("Analyse de sensibilité")
@@ -1591,8 +1590,8 @@ def filter(p):
                     fzr=wzrhpn/(2*m.pi)
                     N,D=getBR_ND(fp, qp, 1, fz)
                     n,d=getBR_ND(fpr, qpr, 1, fzr)
-                    Aff(N, D,n,d,p)
-                    data=[fz,fp,qp,R1m,R3m,R4m,R5m,R8m,C2m,C7m]
+                    plot=Aff(N, D,n,d,p)
+                    data=[fzr,fpr,qpr,R1m,R3m,R4m,R5m,R8m,C2m,C7m]
                     name=['fz','fp','Qp','R1','R3','R4','R5','R8','C2','C7']
                     
                     st.header("Analyse de sensibilité")
@@ -1727,8 +1726,8 @@ def filter(p):
                 K3r=R8m/(R7m*R3m*R5m*C9m*C10m)
                 N,D=getLPTT_ND(fp, qp, K3)
                 n,d=getLPTT_ND(fpr, qpr, K3r)
-                Aff(N, D,n,d,p)
-                data=[fp,qp,R1m,R2m,R3m,R5m,R7m,R8m,C9m,C10m]
+                plot=Aff(N, D,n,d,p)
+                data=[fpr,qpr,R1m,R2m,R3m,R5m,R7m,R8m,C9m,C10m]
                 name=['fp','Qp','R1','R2','R3','R5','R7','R8','C9','C10']
                 
                 st.header("Analyse de sensibilité")
@@ -1853,8 +1852,8 @@ def filter(p):
                 K1r=-R8m/R6m
                 N,D=getHPTT_ND(fp, qp, K1)
                 n,d=getHPTT_ND(fpr, qpr, K1r)
-                Aff(N, D,n,d,p)
-                data=[fp,qp,R1m,R2m,R3m,R6m,R7m,R8m,C9m,C10m]
+                plot=Aff(N, D,n,d,p)
+                data=[fpr,qpr,R1m,R2m,R3m,R6m,R7m,R8m,C9m,C10m]
                 name=['R1','R2','R3','R6','R7','R8','C9','C10']
                 
                 st.header("Analyse de sensibilité")
@@ -1980,8 +1979,8 @@ def filter(p):
                 K2r=R8m/(C9m*R7m*R4m)
                 N,D=getBPTT_ND(fp, qp, K2)
                 n,d=getBPTT_ND(fpr, qpr, K2r)
-                Aff(N, D,n,d,p)
-                data=[fp,qp,R1m,R2m,R3m,R4m,R7m,R8m,C9m,C10m]
+                plot=Aff(N, D,n,d,p)
+                data=[fpr,qpr,R1m,R2m,R3m,R4m,R7m,R8m,C9m,C10m]
                 name=['fp','Qp','R1','R2','R3','R4','R7','R8','C9','C10']
                 
                 st.header("Analyse de sensibilité")
@@ -2111,8 +2110,8 @@ def filter(p):
                     Kr=-R8m/R6m
                     N,D=getBRTT_ND(fp, qp, K,fz)
                     n,d=getBRTT_ND(fpr, qpr, Kr,fzr)
-                    Aff(N, D,n,d,p)
-                    data=[fz,fp,qp,R1m,R2m,R3m,R4m,R5m,R6m,R7m,R8m,C9m,C10m]
+                    plot=Aff(N, D,n,d,p)
+                    data=[fzr,fpr,qpr,R1m,R2m,R3m,R4m,R5m,R6m,R7m,R8m,C9m,C10m]
                     name=['fz','fp','Qp','R1','R2','R3','R4','R5','R6','R7','R8','C9','C10']
                     
                     st.header("Analyse de sensibilité")
@@ -2236,4 +2235,4 @@ def filter(p):
                         ns,ds=getBRTT_ND(fprs, qprs, Ks,fzrs)
                         draw_sensi('S(R8)',N,D,ns,ds,fp,var) 
                         
-    return sel,image,name,data
+    return sel,image,name,data,plot
