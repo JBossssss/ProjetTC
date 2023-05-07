@@ -6,6 +6,7 @@ Created on Tue Feb 28 09:48:06 2023
 import streamlit as st
 import math as m
 import numpy as np
+import scipy.signal as sc
 import matplotlib.pyplot as plt
 from fpdf import FPDF
 from PIL import Image
