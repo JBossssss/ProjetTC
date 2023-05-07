@@ -257,6 +257,7 @@ def draw_supp(N, D,n,d,w_min, w_max):
     plt.ylabel('Amplitude [dB]')
     plt.legend(['Courbe Théorique','Courbe Réelle'])
     plt.show()
+    plt.savefig('graphe.png')
     Image.open('graphe.png')
     st.pyplot(fig,ax)
     return 'graphe.png'
