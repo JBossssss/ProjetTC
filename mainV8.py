@@ -34,7 +34,6 @@ if (sauvegarder(p)):
     tb=[sel,image,name, dat, p,plot]
     data.append(tb)
     p=p+1
-    st.write(plot)
 with cont2:
     if p!=1:
         download_pdf(data)
