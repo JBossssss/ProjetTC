@@ -5,14 +5,7 @@ Dans le ZIP filter design il y a plusieurs types de codes matlab:
 -Les BR ==> Band Reject Filter
 -Les HP ==> High Pass Filter
 
--Les AP jsp ce que c'est
--Les GP je pense que c'est Gain uniquement mais pas sûr
-
--Le START on dirait qu'il contient des explications (non runable)
--Le mainmenu qui lance l'application mais ça me met des erreurs en boucles:
-      -Nom de fichier vide, etc...
-
-Les fichiers filtres sont aussi distingués par d'autres lettres, notamment LQ,MQ et HQ pour Low Q (facteur de qualité), Middle Q et High Q. (je pense)
+Les fichiers filtres sont aussi distingués par d'autres lettres, notamment LQ,MQ et HQ pour Low Q (facteur de qualité), Middle Q et High Q.
 
 Dans les annexes du cours on a les filtres suivants (==>correspondance matlab si possible):
 

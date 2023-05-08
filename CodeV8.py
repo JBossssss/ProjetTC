@@ -1,12 +1,10 @@
+
+
 # -*- coding: utf-8 -*-
 """
 Created on Wed Feb 22 18:33:13 2023
 @author: Jean Bériot
-Sensibilté S en fct R ou C (voir cours) (H delta -H)/delta R (ou delta C)
-Utiliser table de resistance et capa normalisée (décade,...) = bouton pour tout chnager d'un coup'
-Pouvoir augmenter le Qp dans tout les cas
-Pole et Zéro superposés
-Delyanis et friend 
+ 
 """
 from ProjUtilsV8 import *
 import streamlit as st
@@ -22,6 +20,7 @@ def filter(p):
     name=[]
     data=[]
     image=''
+    plot='iLP-MQ.jpg'
     if sel =='LPLQ (Passe-bas de Sallen-Key, Q<2)':
        image= 'iLP-LQ.jpg'
        st.image(image,width=800)
@@ -56,14 +55,14 @@ def filter(p):
                    qpr=(m.sqrt((R3m*C2m)/(R1m*C4m)))/(1+R3m/R1m)
                    n,d=getLP_ND(fpr, qpr, Km)    
                    N,D=getLP_ND(fp, qp, k)
-                   Aff(N, D, n, d,p)
+                   plot=Aff(N, D, n, d,p)
                    
                    name=['fp','Qp','R11','R12','R3','C2','C4','GSP']
                    data=[fpr,qpr,R11m,R12m,R3m,C2m,C4m,GSPm]
                    
-                   st.header("Analyse de sensibilité")
+                   st.header("Analyse de sensibilité de Wp et Qp")
                    sensi=st.expander('Afficher la sensibilité')
-                   d1,d2,d3=sensi.columns([1,1,1])
+                   d1,d2=sensi.columns([1,1])
                    var=1
                    with d1:
                        st.write("S(Qp):") 
@@ -72,12 +71,46 @@ def filter(p):
                        ns,ds=getLP_ND(fprs, qprs, k)
                        draw_sensi('S(Qp)',N,D,ns,ds,fp,var)
                        
+                   with d2:
+                       
                        st.write("S(Wp):")
                        fprs=fp*1.01
                        qprs=qp
                        ns,ds=getLP_ND(fprs, qprs, k)
                        draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
                        
+                       
+                       
+                   st.header("Analyse de sensibilité des capacités")
+                   sensi=st.expander('Afficher la sensibilité')
+                   d1,d2=sensi.columns([1,1])
+                   var=1
+                   with d1:
+
+                       st.write("S(C2):")
+                       C2s=1.01*C2
+                       wps=m.sqrt(1/(R1*C2s*R3*C4))
+                       fprs=wps/(2*m.pi)
+                       qprs=(m.sqrt((R3*C2s)/(R1*C4)))/(1+R3/R1)
+                       ns,ds=getLP_ND(fprs, qprs, k)
+                       draw_sensi('S(C2)',N,D,ns,ds,fp,var)
+                   with d2:
+                       
+                       st.write("S(C4):")
+                       C4s=1.01*C4
+                       wps=m.sqrt(1/(R1*C2*R3*C4s))
+                       fprs=wps/(2*m.pi)
+                       qprs=(m.sqrt((R3*C2)/(R1*C4s)))/(1+R3/R1)
+                       ns,ds=getLP_ND(fprs, qprs, k)
+                       draw_sensi('S(C4)',N,D,ns,ds,fp,var)
+                       
+                
+                   st.header("Analyse de sensibilité des résistances")
+                   sensi=st.expander('Afficher la sensibilité')
+                   d1,d2,d3=sensi.columns([1,1,1])
+                   var=1
+                   with d1:
+
                        st.write("S(R11):")
                        R11s=1.01*R11
                        Ks=R12/(R11s+R12)
@@ -88,13 +121,6 @@ def filter(p):
                        ns,ds=getLP_ND(fprs, qprs, Ks)
                        draw_sensi('S(R11)',N,D,ns,ds,fp,var)
                    with d2:
-                       st.write("S(C2):")
-                       C2s=1.01*C2
-                       wps=m.sqrt(1/(R1*C2s*R3*C4))
-                       fprs=wps/(2*m.pi)
-                       qprs=(m.sqrt((R3*C2s)/(R1*C4)))/(1+R3/R1)
-                       ns,ds=getLP_ND(fprs, qprs, k)
-                       draw_sensi('S(C2)',N,D,ns,ds,fp,var)
                        
                        st.write("S(R12):")
                        R12s=1.01*R12
@@ -106,13 +132,6 @@ def filter(p):
                        ns,ds=getLP_ND(fprs, qprs, Ks)
                        draw_sensi('S(R12)',N,D,ns,ds,fp,var)
                    with d3:
-                       st.write("S(C4):")
-                       C4s=1.01*C4
-                       wps=m.sqrt(1/(R1*C2*R3*C4s))
-                       fprs=wps/(2*m.pi)
-                       qprs=(m.sqrt((R3*C2)/(R1*C4s)))/(1+R3/R1)
-                       ns,ds=getLP_ND(fprs, qprs, k)
-                       draw_sensi('S(C4)',N,D,ns,ds,fp,var)
                        
                        st.write("S(R3):")
                        R3s=1.01*R3
@@ -121,7 +140,8 @@ def filter(p):
                        qprs=(m.sqrt((R3s*C2)/(R1*C4)))/(1+R3s/R1)
                        ns,ds=getLP_ND(fprs, qprs, k)
                        draw_sensi('S(R3)',N,D,ns,ds,fp,var)
-                       
+
+                    
                        
     elif sel =='HPLQ (Passe-haut de Sallen-Key, Q<2)':
         image='iHP-LQ.jpg'
@@ -145,14 +165,14 @@ def filter(p):
             qpr=(m.sqrt((R4m*C1m)/(R2m*C3m)))/(1+C1m/C3m)     
             n,d=getHP_ND(fpr, qpr, Km) 
             N,D=getHP_ND(fp, qp, K)
-            Aff(N, D, n, d,p)
+            plot=Aff(N, D, n, d,p)
             
             name=['fp','Qp','C11','C12','C3','R2','R4','GSP']
             data=[fpr,qpr,C11m,C12m,C3m,R2m,R4m,GSPm]
             
-            st.header("Analyse de sensibilité")
+            st.header("Analyse de sensibilité de Wp et Qp")
             sensi=st.expander('Afficher la sensibilité')
-            d1,d2,d3=sensi.columns([1,1,1])
+            d1,d2=sensi.columns([1,1])
             var=1
             with d1:
                 st.write("S(Qp):") 
@@ -160,6 +180,20 @@ def filter(p):
                 qprs=1.01*qp
                 ns,ds=getHP_ND(fprs, qprs, K)
                 draw_sensi('S(Qp)',N,D,ns,ds,fp,var)
+                
+            with d2:
+                st.write("S(Wp):")
+                fprs=fp*1.01
+                qprs=qp
+                ns,ds=getHP_ND(fprs, qprs, K)
+                draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+                
+                
+            st.header("Analyse de sensibilité des capacités")
+            sensi=st.expander('Afficher la sensibilité')
+            d1,d2,d3=sensi.columns([1,1,1])
+            var=1
+            with d1:
                 
                 st.write("S(C12):")
                 C12s=1.01*C12
@@ -171,20 +205,7 @@ def filter(p):
                 ns,ds=getHP_ND(fprs, qprs, Ks)
                 draw_sensi('S(C12)',N,D,ns,ds,fp,var)
                 
-                st.write("S(R4):")
-                R4s=1.01*R4
-                wps=m.sqrt(1/(C1*R2*C3*R4s))
-                fprs=wps/(2*m.pi)
-                qprs=(m.sqrt((R4s*C1)/(R2*C3)))/(1+C1/C3) 
-                ns,ds=getHP_ND(fprs, qprs, K)
-                draw_sensi('S(R4)',N,D,ns,ds,fp,var)
-                
             with d2:
-                st.write("S(Wp):")
-                fprs=fp*1.01
-                qprs=qp
-                ns,ds=getHP_ND(fprs, qprs, K)
-                draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
                 
                 st.write("S(C3):")
                 C3s=1.01*C3
@@ -205,6 +226,12 @@ def filter(p):
                 qprs=(m.sqrt((R4*C1s)/(R2*C3)))/(1+C1s/C3) 
                 ns,ds=getHP_ND(fprs, qprs, Ks)
                 draw_sensi('S(C11)',N,D,ns,ds,fp,var)
+            
+            st.header("Analyse de sensibilité des résistances")
+            sensi=st.expander('Afficher la sensibilité')
+            d1,d2=sensi.columns([1,1])
+            var=1
+            with d1:
                 
                 st.write("S(R2):")
                 R2s=1.01*R2
@@ -213,6 +240,18 @@ def filter(p):
                 qprs=(m.sqrt((R4*C1)/(R2s*C3)))/(1+C1/C3) 
                 ns,ds=getHP_ND(fprs, qprs, K)
                 draw_sensi('S(R2)',N,D,ns,ds,fp,var)
+                
+                
+            with d2:
+                st.write("S(R4):")
+                R4s=1.01*R4
+                wps=m.sqrt(1/(C1*R2*C3*R4s))
+                fprs=wps/(2*m.pi)
+                qprs=(m.sqrt((R4s*C1)/(R2*C3)))/(1+C1/C3) 
+                ns,ds=getHP_ND(fprs, qprs, K)
+                draw_sensi('S(R4)',N,D,ns,ds,fp,var)
+                
+                
                 
             
                             
@@ -258,14 +297,14 @@ def filter(p):
                 qpr=(m.sqrt((R3m*C2m)/(R1m*C4m)))/(1+R3m/R1m-R6m*C2m/(R5m*C4m))
                 n,d=getLP_ND(fpr, qpr, Km)     
                 N,D=getLP_ND(fp, qp, K)
-                Aff(N, D, n, d,p)
+                plot=Aff(N, D, n, d,p)
                 
                 name=['fp','Qp','R11','R12','R3','R5','R6','C2','C4','GSP']
                 data=[fpr,qpr,R11m,R12m,R3m,R5m,R6m,C2m,C4m,GSPm]
                 
-                st.header("Analyse de sensibilité")
+                st.header("Analyse de sensibilité de Wp et Qp")
                 sensi=st.expander('Afficher la sensibilité')
-                d1,d2,d3=sensi.columns([1,1,1])
+                d1,d2=sensi.columns([1,1])
                 var=1
                 with d1:
                     st.write("S(Qp):") 
@@ -273,22 +312,6 @@ def filter(p):
                     qprs=1.01*qp
                     ns,ds=getLP_ND(fprs, qprs, K)
                     draw_sensi('S(Qp)',N,D,ns,ds,fp,var)
-                    
-                    st.write("S(C4):")
-                    C4s=1.01*C4
-                    wps=m.sqrt(1/(R1*C2*R3*C4s))
-                    fprs=wps/(2*m.pi)
-                    qprs=(m.sqrt((R3*C2)/(R1*C4s)))/(1+R3/R1-R6*C2/(R5*C4s))
-                    ns,ds=getLP_ND(fprs, qprs, K)
-                    draw_sensi('S(C4)',N,D,ns,ds,fp,var)
-                    
-                    st.write("S(R3):")
-                    R3s=1.01*R3
-                    wps=m.sqrt(1/(R1*C2*R3s*C4))
-                    fprs=wps/(2*m.pi)
-                    qprs=(m.sqrt((R3s*C2)/(R1*C4)))/(1+R3s/R1-R6*C2/(R5*C4))
-                    ns,ds=getLP_ND(fprs, qprs, k)
-                    draw_sensi('S(R3)',N,D,ns,ds,fp,var)
         
                 with d2:
                     st.write("S(Wp):")
@@ -297,6 +320,36 @@ def filter(p):
                     ns,ds=getLP_ND(fprs, qprs, K)
                     draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
                     
+                st.header("Analyse de sensibilité des capacités")
+                sensi=st.expander('Afficher la sensibilité')
+                d1,d2=sensi.columns([1,1])
+                var=1
+                with d1:
+                    st.write("S(C2):")
+                    C2s=1.01*C2
+                    wps=m.sqrt(1/(R1*C2s*R3*C4))
+                    fprs=wps/(2*m.pi)
+                    qprs=(m.sqrt((R3*C2s)/(R1*C4)))/(1+R3/R1-R6*C2s/(R5*C4))
+                    ns,ds=getLP_ND(fprs, qprs, K)
+                    draw_sensi('S(C2)',N,D,ns,ds,fp,var)
+                    
+        
+                with d2:
+                    st.write("S(C4):")
+                    C4s=1.01*C4
+                    wps=m.sqrt(1/(R1*C2*R3*C4s))
+                    fprs=wps/(2*m.pi)
+                    qprs=(m.sqrt((R3*C2)/(R1*C4s)))/(1+R3/R1-R6*C2/(R5*C4s))
+                    ns,ds=getLP_ND(fprs, qprs, K)
+                    draw_sensi('S(C4)',N,D,ns,ds,fp,var)
+                    
+
+                
+                st.header("Analyse de sensibilité des résistances")
+                sensi=st.expander('Afficher la sensibilité')
+                d1,d2,d3=sensi.columns([1,1,1])
+                var=1
+                with d1:
                     st.write("S(R11):")
                     R11s=1.01*R11
                     R1s=(R11s*R12)/(R11s+R12)
@@ -316,14 +369,7 @@ def filter(p):
                     ns,ds=getLP_ND(fprs, qprs, Ks)
                     draw_sensi('S(R5)',N,D,ns,ds,fp,var)
         
-                with d3:
-                    st.write("S(C2):")
-                    C2s=1.01*C2
-                    wps=m.sqrt(1/(R1*C2s*R3*C4))
-                    fprs=wps/(2*m.pi)
-                    qprs=(m.sqrt((R3*C2s)/(R1*C4)))/(1+R3/R1-R6*C2s/(R5*C4))
-                    ns,ds=getLP_ND(fprs, qprs, K)
-                    draw_sensi('S(C2)',N,D,ns,ds,fp,var)
+                with d2:
                     
                     st.write("S(R12):")
                     R12s=1.01*R12
@@ -343,6 +389,18 @@ def filter(p):
                     qprs=(m.sqrt((R3*C2)/(R1*C4)))/(1+R3/R1-R6s*C2/(R5*C4))
                     ns,ds=getLP_ND(fprs, qprs, Ks)
                     draw_sensi('S(R6)',N,D,ns,ds,fp,var)
+        
+                with d3:
+                    
+                    st.write("S(R3):")
+                    R3s=1.01*R3
+                    wps=m.sqrt(1/(R1*C2*R3s*C4))
+                    fprs=wps/(2*m.pi)
+                    qprs=(m.sqrt((R3s*C2)/(R1*C4)))/(1+R3s/R1-R6*C2/(R5*C4))
+                    ns,ds=getLP_ND(fprs, qprs, k)
+                    draw_sensi('S(R3)',N,D,ns,ds,fp,var)
+                    
+                    
                  
     elif sel =='HPMQ (Passe-haut de Sallen-Key, Q<5)':
         image='iHP-MQ.jpg'
@@ -372,14 +430,14 @@ def filter(p):
             Km=(C11m/(C11m+C12m))*(1+R6m/R5m)
             n,d=getHP_ND(fpr, qpr, Km)                                     
             N,D=getHP_ND(fp, qp, K)
-            Aff(N, D, n, d,p)
+            plot=Aff(N, D, n, d,p)
             
             name=['fp','Qp','R2','R4','R5','R6','C11','C12','C3','GSP']
             data=[fpr,qpr,R2m,R4m,R5m,R6m,C11m,C12m,C3m,GSPm]
             
-            st.header("Analyse de sensibilité")
+            st.header("Analyse de sensibilité de Wp et Qp")
             sensi=st.expander('Afficher la sensibilité')
-            d1,d2,d3=sensi.columns([1,1,1])
+            d1,d2=sensi.columns([1,1])
             var=1
             with d1:
                 st.write("S(Qp):") 
@@ -387,6 +445,20 @@ def filter(p):
                 qprs=1.01*qp
                 ns,ds=getHP_ND(fprs, qprs, K)
                 draw_sensi('S(Qp)',N,D,ns,ds,fp,var)
+                
+            with d2:
+                st.write("S(Wp):")
+                fprs=fp*1.01
+                qprs=qp
+                ns,ds=getHP_ND(fprs, qprs, K)
+                draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+
+                
+            st.header("Analyse de sensibilité des capacités")
+            sensi=st.expander('Afficher la sensibilité')
+            d1,d2,d3=sensi.columns([1,1,1])
+            var=1
+            with d2:
                 
                 st.write("S(C12):")
                 C12s=1.01*C12
@@ -398,20 +470,7 @@ def filter(p):
                 ns,ds=getHP_ND(fprs, qprs, Ks)
                 draw_sensi('S(C12)',N,D,ns,ds,fp,var)
                 
-                st.write("S(R4):")
-                R4s=1.01*R4
-                wps=m.sqrt(1/(C1*R2*C3*R4s))
-                fprs=wps/(2*m.pi)
-                qprs=(m.sqrt((R4s*C1)/(R2*C3)))/(1+C1/C3-R4s*R6/(R5*R2))
-                ns,ds=getHP_ND(fprs, qprs, K)
-                draw_sensi('S(R4)',N,D,ns,ds,fp,var)
-                
-            with d2:
-                st.write("S(Wp):")
-                fprs=fp*1.01
-                qprs=qp
-                ns,ds=getHP_ND(fprs, qprs, K)
-                draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+            with d3:
                 
                 st.write("S(C3):")
                 C3s=1.01*C3
@@ -420,6 +479,37 @@ def filter(p):
                 qprs=(m.sqrt((R4*C1)/(R2*C3s)))/(1+C1/C3s-R4*R6/(R5*R2))
                 ns,ds=getHP_ND(fprs, qprs, K)
                 draw_sensi('S(C3)',N,D,ns,ds,fp,var)
+                
+                
+            with d1:
+                st.write("S(C11):")
+                C11s=1.01*C11
+                C1s=C11s+C12
+                Ks=(1+R6/R5)*C11s/(C11s+C12)
+                wps=m.sqrt(1/(C1s*R2*C3*R4))
+                fprs=wps/(2*m.pi)
+                qprs=(m.sqrt((R4*C1s)/(R2*C3)))/(1+C1s/C3-R4*R6/(R5*R2))
+                ns,ds=getHP_ND(fprs, qprs, Ks)
+                draw_sensi('S(C11)',N,D,ns,ds,fp,var)
+
+            
+            st.header("Analyse de sensibilité des résistances")
+            sensi=st.expander('Afficher la sensibilité')
+            d1,d2,d3=sensi.columns([1,1,1])
+            var=1
+            with d2:
+
+                
+                st.write("S(R4):")
+                R4s=1.01*R4
+                wps=m.sqrt(1/(C1*R2*C3*R4s))
+                fprs=wps/(2*m.pi)
+                qprs=(m.sqrt((R4s*C1)/(R2*C3)))/(1+C1/C3-R4s*R6/(R5*R2))
+                ns,ds=getHP_ND(fprs, qprs, K)
+                draw_sensi('S(R4)',N,D,ns,ds,fp,var)
+                
+            with d3:
+
                 
                 st.write("S(R5):")
                 R5s=1.01*R5
@@ -431,16 +521,7 @@ def filter(p):
                 draw_sensi('S(R5)',N,D,ns,ds,fp,var)
                 
                 
-            with d3:
-                st.write("S(C11):")
-                C11s=1.01*C11
-                C1s=C11s+C12
-                Ks=(1+R6/R5)*C11s/(C11s+C12)
-                wps=m.sqrt(1/(C1s*R2*C3*R4))
-                fprs=wps/(2*m.pi)
-                qprs=(m.sqrt((R4*C1s)/(R2*C3)))/(1+C1s/C3-R4*R6/(R5*R2))
-                ns,ds=getHP_ND(fprs, qprs, Ks)
-                draw_sensi('S(C11)',N,D,ns,ds,fp,var)
+            with d1:
                 
                 st.write("S(R2):")
                 R2s=1.01*R2
@@ -523,12 +604,12 @@ def filter(p):
                         fzr=wz/(2*m.pi)
                         n,d=getBR_ND(fpr, qpr, Km, fzr)
                         N,D=getBR_ND(fp, qp, K, fz)
-                        Aff(N, D,n,d,p)
+                        plot=Aff(N, D,n,d,p)
                         
                         name=['fp','Qp','R5','R6','R7','R8','R9','C1','C2','C3','C4','R10','K','GSP']
                         data=[fpr,qpr,R5m,R6m,R7m,R8m,R9m,R10m,C1m,C2m,C3m,C4m,Km,GSPm]
                         
-                        st.header("Analyse de sensibilité")
+                        st.header("Analyse de sensibilité de Wp, Wz et Qp")
                         sensi=st.expander('Afficher la sensibilité')
                         d1,d2,d3=sensi.columns([1,1,1])
                         var=1
@@ -537,6 +618,29 @@ def filter(p):
                             qprs=1.01*qp
                             ns,ds=getBR_ND(fp, qprs, K,fz)
                             draw_sensi('S(Qp)',N,D,ns,ds,fp,var)
+                            
+                            
+                            
+                        with d2:
+                            st.write("S(Wp):")
+                            fprs=fp*1.01
+                            ns ,ds=getBR_ND(fprs, qp, K,fz)
+                            draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+                            
+                            
+                        with d3:
+                            st.write("S(Wz):")
+                            fzrs=fz*1.01
+                            ns,ds=getBR_ND(fp, qp, K,fzrs)
+                            draw_sensi('S(Wz)',N,D,ns,ds,fp,var)
+
+                            
+                        st.header("Analyse de sensibilité des capacités")
+                        sensi=st.expander('Afficher la sensibilité')
+                        d1,d2,d3=sensi.columns([1,1,1])
+                        var=1
+                        with d1:
+
                             
                             st.write("S(C1):")
                             C1s=1.01*C1
@@ -560,6 +664,49 @@ def filter(p):
                             fzrs=wz/(2*m.pi)
                             ns,ds=getBR_ND(fprs, qprs, Ks,fzrs)
                             draw_sensi('S(C4)',N,D,ns,ds,fp,var)
+
+                            
+                            
+                            
+                        with d2:
+
+                            
+                            st.write("S(C2):")
+                            C2s=1.01*C2
+                            CSs=(C1*C2s)/(C1+C2s)
+                            Ks=(1+(R10/R9))/(1+(C4/CSs))
+                            wzs=m.sqrt(1/(R5*R6*CSs*C3))
+                            wps=wzs*m.sqrt((1+RS/R8)/(1+C4/CSs))
+                            Qprimes=1/(2*m.sqrt((1+C2s/C1)*(1+C2s/C3)))
+                            qprs=Qprimes*((1+C4/CSs)*wps/wzs)/(Qprimes*(1/(R8*CSs*wzs)+RS*CSs*wzs)-R10/R9)
+                            fprs=wps/(2*m.pi)
+                            fzrs=wzs/(2*m.pi)
+                            ns,ds=getBR_ND(fprs, qprs, Ks,fzrs)
+                            draw_sensi('S(C2)',N,D,ns,ds,fp,var)
+                            
+
+                            
+                        with d3:
+
+                            
+                            st.write("S(C3):")
+                            C3s=1.01*C3
+                            wzs=m.sqrt(1/(R5*R6*CS*C3s))
+                            wps=wzs*m.sqrt((1+RS/R8)/(1+C4/CS))
+                            Qprimes=1/(2*m.sqrt((1+C2/C1)*(1+C2/C3s)))
+                            qprs=Qprimes*((1+C4/CS)*wps/wzs)/(Qprimes*(1/(R8*CS*wzs)+RS*CS*wzs)-R10/R9)
+                            fprs=wps/(2*m.pi)
+                            fzrs=wzs/(2*m.pi)
+                            ns,ds=getBR_ND(fprs, qprs, K,fzrs)
+                            draw_sensi('S(C3)',N,D,ns,ds,fp,var)
+
+                            
+                        st.header("Analyse de sensibilité des résistances")
+                        sensi=st.expander('Afficher la sensibilité')
+                        d1,d2,d3=sensi.columns([1,1,1])
+                        var=1
+                        with d3:
+
                             
                             st.write("S(R7):")
                             R7s=1.01*R7
@@ -582,24 +729,8 @@ def filter(p):
                             
                             
                             
-                        with d2:
-                            st.write("S(Wp):")
-                            fprs=fp*1.01
-                            ns ,ds=getBR_ND(fprs, qp, K,fz)
-                            draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
-                            
-                            st.write("S(C2):")
-                            C2s=1.01*C2
-                            CSs=(C1*C2s)/(C1+C2s)
-                            Ks=(1+(R10/R9))/(1+(C4/CSs))
-                            wzs=m.sqrt(1/(R5*R6*CSs*C3))
-                            wps=wzs*m.sqrt((1+RS/R8)/(1+C4/CSs))
-                            Qprimes=1/(2*m.sqrt((1+C2s/C1)*(1+C2s/C3)))
-                            qprs=Qprimes*((1+C4/CSs)*wps/wzs)/(Qprimes*(1/(R8*CSs*wzs)+RS*CSs*wzs)-R10/R9)
-                            fprs=wps/(2*m.pi)
-                            fzrs=wzs/(2*m.pi)
-                            ns,ds=getBR_ND(fprs, qprs, Ks,fzrs)
-                            draw_sensi('S(C2)',N,D,ns,ds,fp,var)
+                        with d1:
+
                             
                             st.write("S(R5):")
                             R5s=1.01*R5
@@ -622,22 +753,8 @@ def filter(p):
                             draw_sensi('S(R8)',N,D,ns,ds,fp,var)
                             
                             
-                        with d3:
-                            st.write("S(Wz):")
-                            fzrs=fz*1.01
-                            ns,ds=getBR_ND(fp, qp, K,fzrs)
-                            draw_sensi('S(Wz)',N,D,ns,ds,fp,var)
-                            
-                            st.write("S(C3):")
-                            C3s=1.01*C3
-                            wzs=m.sqrt(1/(R5*R6*CS*C3s))
-                            wps=wzs*m.sqrt((1+RS/R8)/(1+C4/CS))
-                            Qprimes=1/(2*m.sqrt((1+C2/C1)*(1+C2/C3s)))
-                            qprs=Qprimes*((1+C4/CS)*wps/wzs)/(Qprimes*(1/(R8*CS*wzs)+RS*CS*wzs)-R10/R9)
-                            fprs=wps/(2*m.pi)
-                            fzrs=wzs/(2*m.pi)
-                            ns,ds=getBR_ND(fprs, qprs, K,fzrs)
-                            draw_sensi('S(C3)',N,D,ns,ds,fp,var)
+                        with d2:
+
                             
                             st.write("S(R6):")
                             R6s=1.01*R6
@@ -696,13 +813,13 @@ def filter(p):
             fpr=wp/(2*m.pi)
             n,d=getPB_ND(fpr, qpr, Km)
             N,D=getPB_ND(fp, qp, K)
-            Aff(N, D,n,d,p)
+            plot=Aff(N, D,n,d,p)
             name=['fp','Qp','R11','R4','C2','C3','GSP']
             data=[fpr,qpr, R11m,R4m,C2m,C3m,GSPm]
             
-            st.header("Analyse de sensibilité")
+            st.header("Analyse de sensibilité de Wp et Qp")
             sensi=st.expander('Afficher la sensibilité')
-            d1,d2,d3=sensi.columns([1,1,1])
+            d1,d2=sensi.columns([1,1])
             var=1
             with d1:
                 st.write("S(Qp):") 
@@ -710,6 +827,20 @@ def filter(p):
                 qprs=1.01*qp
                 ns,ds=getPB_ND(fprs, qprs, K)
                 draw_sensi('S(Qp)',N,D,ns,ds,fp,var)
+                
+            with d2:
+                st.write("S(Wp):")
+                fprs=fp*1.01
+                qprs=qp
+                ns,ds=getPB_ND(fprs, qprs, K)
+                draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+
+            
+            st.header("Analyse de sensibilité des capacités")
+            sensi=st.expander('Afficher la sensibilité')
+            d1,d2=sensi.columns([1,1])
+            var=1
+            with d2:
                 
                 st.write("S(C3):")
                 C3s=1.01*C3
@@ -721,6 +852,25 @@ def filter(p):
                 ns,ds=getPB_ND(fprs, qprs, Ks)
                 draw_sensi('S(C3)',N,D,ns,ds,fp,var)
                 
+            with d1:
+
+                st.write("S(C2):")
+                C2s=1.01*C2
+                qprs=m.sqrt((R4*C2s)/(R1*C3))/(1+C2s/C3)
+                K0s=(qprs*qprs)*(1+(C3/C2s))
+                Ks=(R12*K0s)/(R11+R12)
+                wps=m.sqrt(1/(R1*C2s*C3*R4))  
+                fprs=wps/(2*m.pi)
+                ns,ds=getPB_ND(fprs, qprs, Ks)
+                draw_sensi('S(C2)',N,D,ns,ds,fp,var)
+
+            
+            st.header("Analyse de sensibilité des résistances")
+            sensi=st.expander('Afficher la sensibilité')
+            d1,d2,d3=sensi.columns([1,1,1])
+            var=1
+            with d3:
+                
                 st.write("S(R4):")
                 R4s=1.01*R4
                 qprs=m.sqrt((R4s*C2)/(R1*C3))/(1+C2/C3)
@@ -731,12 +881,7 @@ def filter(p):
                 ns,ds=getPB_ND(fprs, qprs, K)
                 draw_sensi('S(R11)',N,D,ns,ds,fp,var)
                 
-            with d2:
-                st.write("S(Wp):")
-                fprs=fp*1.01
-                qprs=qp
-                ns,ds=getPB_ND(fprs, qprs, K)
-                draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+            with d1:
                 
                 st.write("S(R11):")
                 R11s=1.01*R11
@@ -749,16 +894,7 @@ def filter(p):
                 ns,ds=getPB_ND(fprs, qprs, K)
                 draw_sensi('S(R11)',N,D,ns,ds,fp,var)
                 
-            with d3:
-                st.write("S(C2):")
-                C2s=1.01*C2
-                qprs=m.sqrt((R4*C2s)/(R1*C3))/(1+C2s/C3)
-                K0s=(qprs*qprs)*(1+(C3/C2s))
-                Ks=(R12*K0s)/(R11+R12)
-                wps=m.sqrt(1/(R1*C2s*C3*R4))  
-                fprs=wps/(2*m.pi)
-                ns,ds=getPB_ND(fprs, qprs, Ks)
-                draw_sensi('S(C2)',N,D,ns,ds,fp,var)
+            with d2:
                 
                 st.write("S(R12):")
                 R12s=1.01*R12
@@ -796,13 +932,13 @@ def filter(p):
                 fpr=wp/(2*m.pi)
                 N,D=getPB_ND(fp, qp, K)
                 n,d=getPB_ND(fpr, qpr, Km)
-                Aff(N, D,n,d,p)
+                plot=Aff(N, D,n,d,p)
                 name=['fp','Qp','R2','R3','C11','C12','C4','GSP']
                 data=[fpr,qpr, R2m,R3m,C11m,C12m,C4m,GSPm]
                 
-                st.header("Analyse de sensibilité")
+                st.header("Analyse de sensibilité de Wp et Qp")
                 sensi=st.expander('Afficher la sensibilité')
-                d1,d2,d3=sensi.columns([1,1,1])
+                d1,d2=sensi.columns([1,1])
                 var=1
                 with d1:
                     st.write("S(Qp):") 
@@ -810,6 +946,19 @@ def filter(p):
                     qprs=1.01*qp
                     ns,ds=getPB_ND(fprs, qprs, K)
                     draw_sensi('S(Qp)',N,D,ns,ds,fp,var)
+                    
+                with d2:
+                    st.write("S(Wp):")
+                    fprs=fp*1.01
+                    qprs=qp
+                    ns,ds=getPB_ND(fprs, qprs, K)
+                    draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+                
+                st.header("Analyse de sensibilité des capacités")
+                sensi=st.expander('Afficher la sensibilité')
+                d1,d2,d3=sensi.columns([1,1,1])
+                var=1
+                with d2:
                     
                     st.write("S(C12):")
                     C12s=1.01*C12
@@ -822,22 +971,7 @@ def filter(p):
                     ns,ds=getPB_ND(fprs, qprs, Ks)
                     draw_sensi('S(C12)',N,D,ns,ds,fp,var)
                     
-                    st.write("S(R3):")
-                    R3s=1.01*R3
-                    qprs=m.sqrt((R3s*C1)/(R2*C4))/(1+R3s/R2)
-                    wps=m.sqrt(1/(R2*C1*C4*R3s))
-                    K0s=qprs*m.sqrt((C1*R2)/(C4*R3s))
-                    Ks=(C11*K0s)/(C11+C12)
-                    fprs=wps/(2*m.pi)
-                    ns,ds=getPB_ND(fprs, qprs, Ks)
-                    draw_sensi('S(R3)',N,D,ns,ds,fp,var)
-                    
-                with d2:
-                    st.write("S(Wp):")
-                    fprs=fp*1.01
-                    qprs=qp
-                    ns,ds=getPB_ND(fprs, qprs, K)
-                    draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+                with d3:
                     
                     st.write("S(C4):")
                     C4s=1.01*C4
@@ -849,7 +983,7 @@ def filter(p):
                     ns,ds=getPB_ND(fprs, qprs, Ks)
                     draw_sensi('S(C4)',N,D,ns,ds,fp,var)
                     
-                with d3:
+                with d1:
                     st.write("S(C11):")
                     C11s=1.01*C11
                     C1s=C11s+C12
@@ -860,6 +994,24 @@ def filter(p):
                     fprs=wps/(2*m.pi)
                     ns,ds=getPB_ND(fprs, qprs, Ks)
                     draw_sensi('S(C11)',N,D,ns,ds,fp,var)
+                
+                st.header("Analyse de sensibilité des résistances")
+                sensi=st.expander('Afficher la sensibilité')
+                d1,d2=sensi.columns([1,1])
+                var=1
+                with d2:
+                    
+                    st.write("S(R3):")
+                    R3s=1.01*R3
+                    qprs=m.sqrt((R3s*C1)/(R2*C4))/(1+R3s/R2)
+                    wps=m.sqrt(1/(R2*C1*C4*R3s))
+                    K0s=qprs*m.sqrt((C1*R2)/(C4*R3s))
+                    Ks=(C11*K0s)/(C11+C12)
+                    fprs=wps/(2*m.pi)
+                    ns,ds=getPB_ND(fprs, qprs, Ks)
+                    draw_sensi('S(R3)',N,D,ns,ds,fp,var)
+                    
+                with d1:
                     
                     st.write("S(R2):")
                     R2s=1.01*R2
@@ -911,13 +1063,13 @@ def filter(p):
             fpr=wp/(2*m.pi)
             N,D=getPB_ND(fp, qp, K)
             n,d=getPB_ND(fpr, qpr, Km)
-            Aff(N, D,n,d,p)
+            plot=Aff(N, D,n,d,p)
             name=['fp','Qp','R11','R12','R4','R5','C2','C3','P','GSP']
             data=[fpr,qpr, R11m,R12m,R4m,R5m,C2m,C3m,Pm,GSPm]
             
-            st.header("Analyse de sensibilité")
+            st.header("Analyse de sensibilité de Wp et Qp")
             sensi=st.expander('Afficher la sensibilité')
-            d1,d2,d3=sensi.columns([1,1,1])
+            d1,d2=sensi.columns([1,1])
             var=1
             with d1:
                 st.write("S(Qp):") 
@@ -925,6 +1077,19 @@ def filter(p):
                 qprs=1.01*qp
                 ns,ds=getPB_ND(fprs, qprs, K)
                 draw_sensi('S(Qp)',N,D,ns,ds,fp,var)
+                
+            with d2:
+                st.write("S(Wp):")
+                fprs=fp*1.01
+                qprs=qp
+                ns,ds=getPB_ND(fprs, qprs, K)
+                draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+                
+            st.header("Analyse de sensibilité des capacités")
+            sensi=st.expander('Afficher la sensibilité')
+            d1,d2=sensi.columns([1,1])
+            var=1
+            with d2:
                 
                 st.write("S(C3):")
                 C3s=1.01*C3
@@ -935,6 +1100,22 @@ def filter(p):
                 ns,ds=getPB_ND(fprs, qprs, Ks)
                 draw_sensi('S(C3)',N,D,ns,ds,fp,var)
                 
+            with d1:
+                st.write("S(C2):")
+                C2s=1.01*C2
+                qprs=m.sqrt((R4*C2s)/(R1*C3))/(1+C2s/C3-R4*R5/(R1*R6))
+                Ks=((R12*qprs)/(R11+R12))*(1+R5/R6)*m.sqrt((C3*R4)/(R1*C2s))
+                wps=m.sqrt(1/(R1*C2s*C3*R4))
+                fprs=wps/(2*m.pi)
+                ns,ds=getPB_ND(fprs, qprs, Ks)
+                draw_sensi('S(C2)',N,D,ns,ds,fp,var)
+            
+            st.header("Analyse de sensibilité des résistances")
+            sensi=st.expander('Afficher la sensibilité')
+            d1,d2,d3=sensi.columns([1,1,1])
+            var=1
+            with d3:
+                
                 st.write("S(R4):")
                 R4s=1.01*R4
                 qprs=m.sqrt((R4s*C2)/(R1*C3))/(1+C2/C3-R4s*R5/(R1*R6))
@@ -944,12 +1125,7 @@ def filter(p):
                 ns,ds=getPB_ND(fprs, qprs, Ks)
                 draw_sensi('S(R4)',N,D,ns,ds,fp,var)
                 
-            with d2:
-                st.write("S(Wp):")
-                fprs=fp*1.01
-                qprs=qp
-                ns,ds=getPB_ND(fprs, qprs, K)
-                draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+            with d1:
                 
                 st.write("S(R11):")
                 R11s=1.01*R11
@@ -970,15 +1146,7 @@ def filter(p):
                 ns,ds=getPB_ND(fprs, qprs, Ks)
                 draw_sensi('S(R5)',N,D,ns,ds,fp,var)
                 
-            with d3:
-                st.write("S(C2):")
-                C2s=1.01*C2
-                qprs=m.sqrt((R4*C2s)/(R1*C3))/(1+C2s/C3-R4*R5/(R1*R6))
-                Ks=((R12*qprs)/(R11+R12))*(1+R5/R6)*m.sqrt((C3*R4)/(R1*C2s))
-                wps=m.sqrt(1/(R1*C2s*C3*R4))
-                fprs=wps/(2*m.pi)
-                ns,ds=getPB_ND(fprs, qprs, Ks)
-                draw_sensi('S(C2)',N,D,ns,ds,fp,var)
+            with d2:
                 
                 st.write("S(R12):")
                 R12s=1.01*R12
@@ -1024,13 +1192,13 @@ def filter(p):
             fpr=wp/(2*m.pi)
             N,D=getPB_ND(fp, qp, K)
             n,d=getPB_ND(fpr, qpr, Km)
-            Aff(N, D,n,d,p)
+            plot=Aff(N, D,n,d,p)
             name=['fp','Qp','R2','R3','R5','C11','C12','C4','R6  (Optionnel)','P','GSP']
             data=[fpr,qpr, R2m,R3m,R5m,C11m,C12m,C4m,R6m,Pm,GSPm]
             
-            st.header("Analyse de sensibilité")
+            st.header("Analyse de sensibilité de Wp et Qp")
             sensi=st.expander('Afficher la sensibilité')
-            d1,d2,d3=sensi.columns([1,1,1])
+            d1,d2=sensi.columns([1,1])
             var=1
             with d1:
                 st.write("S(Qp):") 
@@ -1038,6 +1206,19 @@ def filter(p):
                 qprs=1.01*qp
                 ns,ds=getPB_ND(fprs, qprs, K)
                 draw_sensi('S(Qp)',N,D,ns,ds,fp,var)
+                
+            with d2:
+                st.write("S(Wp):")
+                fprs=fp*1.01
+                qprs=qp
+                ns,ds=getPB_ND(fprs, qprs, K)
+                draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+            
+            st.header("Analyse de sensibilité des capacités")
+            sensi=st.expander('Afficher la sensibilité')
+            d1,d2,d3=sensi.columns([1,1,1])
+            var=1
+            with d2:
                 
                 st.write("S(C12):")
                 C12s=1.01*C12
@@ -1049,21 +1230,7 @@ def filter(p):
                 ns,ds=getPB_ND(fprs, qprs, Ks)
                 draw_sensi('S(C12)',N,D,ns,ds,fp,var)
                 
-                st.write("S(R3):")
-                R3s=1.01*R3
-                qprs=m.sqrt((R3s*C1)/(R2*C4))/(1+R3s/R2-C1*R5/(C4*R6))
-                wps=m.sqrt(1/(R2*C1*R3s*C4))
-                Ks=C11/C1*(1+R5/R6)*qprs*m.sqrt((C1*R2)/(R3s*C4))
-                fprs=wps/(2*m.pi)
-                ns,ds=getPB_ND(fprs, qprs, Ks)
-                draw_sensi('S(R3)',N,D,ns,ds,fp,var)
-                
-            with d2:
-                st.write("S(Wp):")
-                fprs=fp*1.01
-                qprs=qp
-                ns,ds=getPB_ND(fprs, qprs, K)
-                draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+            with d3:
                 
                 st.write("S(C4):")
                 C4s=1.01*C4
@@ -1074,16 +1241,7 @@ def filter(p):
                 ns,ds=getPB_ND(fprs, qprs, Ks)
                 draw_sensi('S(C4)',N,D,ns,ds,fp,var)
                 
-                st.write("S(R5):")
-                R5s=1.01*R5
-                qprs=m.sqrt((R3*C1)/(R2*C4))/(1+R3/R2-C1*R5s/(C4*R6))
-                wps=m.sqrt(1/(R2*C1*R3*C4))
-                Ks=C11/C1*(1+R5s/R6)*qprs*m.sqrt((C1*R2)/(R3*C4))
-                fprs=wps/(2*m.pi)
-                ns,ds=getPB_ND(fprs, qprs, Ks)
-                draw_sensi('S(R5)',N,D,ns,ds,fp,var)
-                
-            with d3:
+            with d1:
                 st.write("S(C11):")
                 C11s=1.01*C11
                 C1s=C11s+C12
@@ -1093,6 +1251,33 @@ def filter(p):
                 fprs=wps/(2*m.pi)
                 ns,ds=getPB_ND(fprs, qprs, Ks)
                 draw_sensi('S(C11)',N,D,ns,ds,fp,var)
+            
+            st.header("Analyse de sensibilité des résistances")
+            sensi=st.expander('Afficher la sensibilité')
+            d1,d2,d3=sensi.columns([1,1,1])
+            var=1
+            with d2:
+                st.write("S(R3):")
+                R3s=1.01*R3
+                qprs=m.sqrt((R3s*C1)/(R2*C4))/(1+R3s/R2-C1*R5/(C4*R6))
+                wps=m.sqrt(1/(R2*C1*R3s*C4))
+                Ks=C11/C1*(1+R5/R6)*qprs*m.sqrt((C1*R2)/(R3s*C4))
+                fprs=wps/(2*m.pi)
+                ns,ds=getPB_ND(fprs, qprs, Ks)
+                draw_sensi('S(R3)',N,D,ns,ds,fp,var)
+                
+            with d3:
+                
+                st.write("S(R5):")
+                R5s=1.01*R5
+                qprs=m.sqrt((R3*C1)/(R2*C4))/(1+R3/R2-C1*R5s/(C4*R6))
+                wps=m.sqrt(1/(R2*C1*R3*C4))
+                Ks=C11/C1*(1+R5s/R6)*qprs*m.sqrt((C1*R2)/(R3*C4))
+                fprs=wps/(2*m.pi)
+                ns,ds=getPB_ND(fprs, qprs, Ks)
+                draw_sensi('S(R5)',N,D,ns,ds,fp,var)
+                
+            with d1:
                 
                 st.write("S(R2):")
                 R2s=1.01*R2
@@ -1139,13 +1324,13 @@ def filter(p):
             fpr=wp/(2*m.pi)
             N,D=getLP_ND(fp, qp, K)
             n,d=getLP_ND(fpr, qpr, Km)
-            Aff(N, D,n,d,p)
+            plot=Aff(N, D,n,d,p)
             name=['fp','Qp','R1','R2','R3','R6','R7','C1','C4']
             data=[fpr,qpr, R1m,R2m,R3m,R6m,R7m,C1m,C4m]
             
-            st.header("Analyse de sensibilité")
+            st.header("Analyse de sensibilité de Wp et Qp")
             sensi=st.expander('Afficher la sensibilité')
-            d1,d2,d3=sensi.columns([1,1,1])
+            d1,d2=sensi.columns([1,1])
             var=1
             with d1:
                 st.write("S(Qp):") 
@@ -1153,7 +1338,20 @@ def filter(p):
                 qprs=1.01*qp
                 ns,ds=getLP_ND(fprs, qprs, K)
                 draw_sensi('S(Qp)',N,D,ns,ds,fp,var)
-                
+
+            with d2:
+                st.write("S(Wp):")
+                fprs=fp*1.01
+                qprs=qp
+                ns,ds=getLP_ND(fprs, qprs, K)
+                draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+
+            
+            st.header("Analyse de sensibilité des capacités")
+            sensi=st.expander('Afficher la sensibilité')
+            d1,d2=sensi.columns([1,1])
+            var=1
+            with d2:
                 st.write("S(C4):")
                 C4s=1.01*C4
                 Ks=1+R2/R6
@@ -1162,6 +1360,24 @@ def filter(p):
                 fprs=wps/(2*m.pi)
                 ns,ds=getLP_ND(fprs, qprs, Ks)
                 draw_sensi('S(C4)',N,D,ns,ds,fp,var)
+                
+            with d1:
+
+                st.write("S(C1):")
+                C1s=1.01*C1
+                Ks=1+R2/R6
+                wps=m.sqrt(R6/(R2*R3*R7*C1s*C4))
+                qprs=wps*R1*C1s
+                fprs=wps/(2*m.pi)
+                ns,ds=getLP_ND(fprs, qprs, Ks)
+                draw_sensi('S(C1)',N,D,ns,ds,fp,var)
+
+            
+            st.header("Analyse de sensibilité des résistances")
+            sensi=st.expander('Afficher la sensibilité')
+            d1,d2,d3=sensi.columns([1,1,1])
+            var=1
+            with d3:
                 
                 st.write("S(R3):")
                 R3s=1.01*R3
@@ -1172,12 +1388,7 @@ def filter(p):
                 ns,ds=getLP_ND(fprs, qprs, Ks)
                 draw_sensi('S(R3)',N,D,ns,ds,fp,var)
                 
-            with d2:
-                st.write("S(Wp):")
-                fprs=fp*1.01
-                qprs=qp
-                ns,ds=getLP_ND(fprs, qprs, K)
-                draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+            with d1:
                 
                 st.write("S(R1):")
                 R1s=1.01*R1
@@ -1197,15 +1408,7 @@ def filter(p):
                 ns,ds=getLP_ND(fprs, qprs, Ks)
                 draw_sensi('S(R6)',N,D,ns,ds,fp,var)
                 
-            with d3:
-                st.write("S(C1):")
-                C1s=1.01*C1
-                Ks=1+R2/R6
-                wps=m.sqrt(R6/(R2*R3*R7*C1s*C4))
-                qprs=wps*R1*C1s
-                fprs=wps/(2*m.pi)
-                ns,ds=getLP_ND(fprs, qprs, Ks)
-                draw_sensi('S(C1)',N,D,ns,ds,fp,var)
+            with d2:
                 
                 st.write("S(R2):")
                 R2s=1.01*R2
@@ -1250,13 +1453,13 @@ def filter(p):
             fpr=wp/(2*m.pi)
             N,D=getPB_ND(fp, qp, K)
             n,d=getPB_ND(fpr, qpr, Km)
-            Aff(N, D,n,d,p)
-            data=[fp,qp,R1m,R2m,R4m,R6m,R7m,C3m,C8m]
+            plot=Aff(N, D,n,d,p)
+            data=[fpr,qpr,R1m,R2m,R4m,R6m,R7m,C3m,C8m]
             name=['fp','Qp','R1','R2','R4','R6','R7','C3','C8']
             
-            st.header("Analyse de sensibilité")
+            st.header("Analyse de sensibilité de Wp et Qp")
             sensi=st.expander('Afficher la sensibilité')
-            d1,d2,d3=sensi.columns([1,1,1])
+            d1,d2=sensi.columns([1,1])
             var=1
             with d1:
                 st.write("S(Qp):") 
@@ -1264,6 +1467,19 @@ def filter(p):
                 qprs=1.01*qp
                 ns,ds=getPB_ND(fprs, qprs, K)
                 draw_sensi('S(Qp)',N,D,ns,ds,fp,var)
+                
+            with d2:
+                st.write("S(Wp):")
+                fprs=fp*1.01
+                qprs=qp
+                ns,ds=getPB_ND(fprs, qprs, K)
+                draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+            
+            st.header("Analyse de sensibilité des capacités")
+            sensi=st.expander('Afficher la sensibilité')
+            d1,d2=sensi.columns([1,1])
+            var=1
+            with d2:
                 
                 st.write("S(C8):")
                 C8s=1.01*C8
@@ -1274,6 +1490,24 @@ def filter(p):
                 ns,ds=getPB_ND(fprs, qprs, Ks)
                 draw_sensi('S(C8)',N,D,ns,ds,fp,var)
                 
+            with d1:
+
+                st.write("S(C3):")
+                C3s=1.01*C3
+                Ks=1+R2/R6
+                wps=m.sqrt(R2/(R1*R4*R6*C3s*C8))
+                qprs=wps*R7*C8
+                fprs=wps/(2*m.pi)
+                ns,ds=getPB_ND(fprs, qprs, Ks)
+                draw_sensi('S(C3)',N,D,ns,ds,fp,var)
+                
+            
+            st.header("Analyse de sensibilité des résistances")
+            sensi=st.expander('Afficher la sensibilité')
+            d1,d2,d3=sensi.columns([1,1,1])
+            var=1
+            with d3:
+                
                 st.write("S(R4):")
                 R4s=1.01*R4
                 Ks=1+R2/R6
@@ -1283,12 +1517,8 @@ def filter(p):
                 ns,ds=getPB_ND(fprs, qprs, Ks)
                 draw_sensi('S(R4)',N,D,ns,ds,fp,var)
                 
-            with d2:
-                st.write("S(Wp):")
-                fprs=fp*1.01
-                qprs=qp
-                ns,ds=getPB_ND(fprs, qprs, K)
-                draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+            with d1:
+
                 
                 st.write("S(R1):")
                 R1s=1.01*R1
@@ -1308,15 +1538,7 @@ def filter(p):
                 ns,ds=getPB_ND(fprs, qprs, Ks)
                 draw_sensi('S(R6)',N,D,ns,ds,fp,var)
                 
-            with d3:
-                st.write("S(C3):")
-                C3s=1.01*C3
-                Ks=1+R2/R6
-                wps=m.sqrt(R2/(R1*R4*R6*C3s*C8))
-                qprs=wps*R7*C8
-                fprs=wps/(2*m.pi)
-                ns,ds=getPB_ND(fprs, qprs, Ks)
-                draw_sensi('S(C3)',N,D,ns,ds,fp,var)
+            with d2:
                 
                 st.write("S(R2):")
                 R2s=1.01*R2
@@ -1361,13 +1583,13 @@ def filter(p):
             fpr=wp/(2*m.pi)
             N,D=getHP_ND(fp, qp, K)
             n,d=getHP_ND(fpr, qpr, Km)
-            Aff(N, D,n,d,p)
-            data=[fp,qp,R1m,R2m,R4m,R6m,R8m,C3m,C7m]
+            plot=Aff(N, D,n,d,p)
+            data=[fpr,qpr,R1m,R2m,R4m,R6m,R8m,C3m,C7m]
             name=['fp','Qp','R1','R2','R4','R6','R8','C3','C7']
             
-            st.header("Analyse de sensibilité")
+            st.header("Analyse de sensibilité de Wp et Qp")
             sensi=st.expander('Afficher la sensibilité')
-            d1,d2,d3=sensi.columns([1,1,1])
+            d1,d2=sensi.columns([1,1])
             var=1
             with d1:
                 st.write("S(Qp):") 
@@ -1375,6 +1597,19 @@ def filter(p):
                 qprs=1.01*qp
                 ns,ds=getHP_ND(fprs, qprs, K)
                 draw_sensi('S(Qp)',N,D,ns,ds,fp,var)
+                
+            with d2:
+                st.write("S(Wp):")
+                fprs=fp*1.01
+                qprs=qp
+                ns,ds=getHP_ND(fprs, qprs, K)
+                draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+            
+            st.header("Analyse de sensibilité des capacités")
+            sensi=st.expander('Afficher la sensibilité')
+            d1,d2=sensi.columns([1,1])
+            var=1
+            with d2:
                 
                 st.write("S(C7):")
                 C7s=1.01*C7
@@ -1385,6 +1620,22 @@ def filter(p):
                 ns,ds=getHP_ND(fprs, qprs, Ks)
                 draw_sensi('S(C7)',N,D,ns,ds,fp,var)
                 
+            with d1:
+                st.write("S(C3):")
+                C3s=1.01*C3
+                Ks=1+R2/R6
+                wps=m.sqrt(R2/(R1*R4*R6*C3s*C7))
+                qprs=wps*R8*C7
+                fprs=wps/(2*m.pi)
+                ns,ds=getHP_ND(fprs, qprs, Ks)
+                draw_sensi('S(C3)',N,D,ns,ds,fp,var)
+            
+            st.header("Analyse de sensibilité des résistances")
+            sensi=st.expander('Afficher la sensibilité')
+            d1,d2,d3=sensi.columns([1,1,1])
+            var=1
+            with d3:
+                
                 st.write("S(R4):")
                 R4s=1.01*R4
                 Ks=1+R2/R6
@@ -1394,12 +1645,7 @@ def filter(p):
                 ns,ds=getHP_ND(fprs, qprs, Ks)
                 draw_sensi('S(R4)',N,D,ns,ds,fp,var)
                 
-            with d2:
-                st.write("S(Wp):")
-                fprs=fp*1.01
-                qprs=qp
-                ns,ds=getHP_ND(fprs, qprs, K)
-                draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+            with d1:
                 
                 st.write("S(R1):")
                 R1s=1.01*R1
@@ -1419,15 +1665,7 @@ def filter(p):
                 ns,ds=getHP_ND(fprs, qprs, Ks)
                 draw_sensi('S(R6)',N,D,ns,ds,fp,var)
                 
-            with d3:
-                st.write("S(C3):")
-                C3s=1.01*C3
-                Ks=1+R2/R6
-                wps=m.sqrt(R2/(R1*R4*R6*C3s*C7))
-                qprs=wps*R8*C7
-                fprs=wps/(2*m.pi)
-                ns,ds=getHP_ND(fprs, qprs, Ks)
-                draw_sensi('S(C3)',N,D,ns,ds,fp,var)
+            with d2:
                 
                 st.write("S(R2):")
                 R2s=1.01*R2
@@ -1473,11 +1711,11 @@ def filter(p):
                 fzr=wzrlpn/(2*m.pi)
                 N,D=getBR_ND(fp, qp, 1, fz)
                 n,d=getBR_ND(fpr, qpr, 1, fzr)
-                Aff(N, D,n,d,p)
-                data=[fz,fp,qp,R1m,R3m,R4m,R5m,R8m,C2m,C7m]
+                plot=Aff(N, D,n,d,p)
+                data=[fzr,fpr,qpr,R1m,R3m,R4m,R5m,R8m,C2m,C7m]
                 name=['fz','fp','Qp','R1','R3','R4','R5','R8','C2','C7']
                 
-                st.header("Analyse de sensibilité")
+                st.header("Analyse de sensibilité de Wp, Wz et Qp")
                 sensi=st.expander('Afficher la sensibilité')
                 d1,d2,d3=sensi.columns([1,1,1])
                 var=1
@@ -1489,6 +1727,28 @@ def filter(p):
                     ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
                     draw_sensi('S(Qp)',N,D,ns,ds,fp,var)
                     
+                with d2:
+                    st.write("S(Wp):")
+                    fprs=fp*1.01
+                    qprs=qp
+                    fzrs=fz
+                    ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
+                    draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+                    
+                with d3:
+                    st.write("S(Wz):")
+                    fzrs=fz*1.01
+                    qprs=qp
+                    fprs=fp
+                    ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
+                    draw_sensi('S(Wz)',N,D,ns,ds,fp,var)
+                
+                st.header("Analyse de sensibilité des capacités")
+                sensi=st.expander('Afficher la sensibilité')
+                d1,d2=sensi.columns([1,1])
+                var=1
+                with d1:
+                    
                     st.write("S(C2):")
                     C2s=1.01*C2
                     wprs=m.sqrt(R3/(R1*R4*R5*C2s*C7))
@@ -1498,6 +1758,24 @@ def filter(p):
                     fzrs=wzrlpns/(2*m.pi)
                     ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
                     draw_sensi('S(C2)',N,D,ns,ds,fp,var)
+                    
+                with d2:
+                    
+                    st.write("S(C7):")
+                    C7s=1.01*C7
+                    wprs=m.sqrt(R3/(R1*R4*R5*C2*C7s))
+                    qprs=wprs*C7s*R8
+                    wzrlpns=wprs*m.sqrt(1+R4/R8)
+                    fprs=wprs/(2*m.pi)
+                    fzrs=wzrlpns/(2*m.pi)
+                    ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
+                    draw_sensi('S(C7)',N,D,ns,ds,fp,var)
+                
+                st.header("Analyse de sensibilité des résistances")
+                sensi=st.expander('Afficher la sensibilité')
+                d1,d2,d3=sensi.columns([1,1,1])
+                var=1
+                with d2:
                     
                     st.write("S(R3):")
                     R3s=1.01*R3
@@ -1519,23 +1797,7 @@ def filter(p):
                     ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
                     draw_sensi('S(R8)',N,D,ns,ds,fp,var)
                     
-                with d2:
-                    st.write("S(Wp):")
-                    fprs=fp*1.01
-                    qprs=qp
-                    fzrs=fz
-                    ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
-                    draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
-                    
-                    st.write("S(C7):")
-                    C7s=1.01*C7
-                    wprs=m.sqrt(R3/(R1*R4*R5*C2*C7s))
-                    qprs=wprs*C7s*R8
-                    wzrlpns=wprs*m.sqrt(1+R4/R8)
-                    fprs=wprs/(2*m.pi)
-                    fzrs=wzrlpns/(2*m.pi)
-                    ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
-                    draw_sensi('S(C7)',N,D,ns,ds,fp,var)
+                with d3:
                     
                     st.write("S(R4):")
                     R4s=1.01*R4
@@ -1547,13 +1809,7 @@ def filter(p):
                     ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
                     draw_sensi('S(R4)',N,D,ns,ds,fp,var)
                     
-                with d3:
-                    st.write("S(Wz):")
-                    fzrs=fz*1.01
-                    qprs=qp
-                    fprs=fp
-                    ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
-                    draw_sensi('S(Wz)',N,D,ns,ds,fp,var)
+                with d1:
                     
                     st.write("S(R1):")
                     R1s=1.01*R1
@@ -1591,11 +1847,11 @@ def filter(p):
                     fzr=wzrhpn/(2*m.pi)
                     N,D=getBR_ND(fp, qp, 1, fz)
                     n,d=getBR_ND(fpr, qpr, 1, fzr)
-                    Aff(N, D,n,d,p)
-                    data=[fz,fp,qp,R1m,R3m,R4m,R5m,R8m,C2m,C7m]
+                    plot=Aff(N, D,n,d,p)
+                    data=[fzr,fpr,qpr,R1m,R3m,R4m,R5m,R8m,C2m,C7m]
                     name=['fz','fp','Qp','R1','R3','R4','R5','R8','C2','C7']
                     
-                    st.header("Analyse de sensibilité")
+                    st.header("Analyse de sensibilité de Wp, Wz et Qp")
                     sensi=st.expander('Afficher la sensibilité')
                     d1,d2,d3=sensi.columns([1,1,1])
                     var=1
@@ -1607,6 +1863,28 @@ def filter(p):
                         ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
                         draw_sensi('S(Qp)',N,D,ns,ds,fp,var)
                         
+                    with d2:
+                        st.write("S(Wp):")
+                        fprs=fp*1.01
+                        qprs=qp
+                        fzrs=fz
+                        ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
+                        draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+
+                    with d3:
+                        st.write("S(Wz):")
+                        fzrs=fz*1.01
+                        qprs=qp
+                        fprs=fp
+                        ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
+                        draw_sensi('S(Wz)',N,D,ns,ds,fp,var)
+                    
+                    st.header("Analyse de sensibilité des capacités")
+                    sensi=st.expander('Afficher la sensibilité')
+                    d1,d2=sensi.columns([1,1])
+                    var=1
+                    with d1:
+                        
                         st.write("S(C2):")
                         C2s=1.01*C2
                         wps=m.sqrt(R3/(R1*R4*R5*C2s*C7))
@@ -1616,6 +1894,26 @@ def filter(p):
                         fzrs=wzrhpns/(2*m.pi)
                         ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
                         draw_sensi('S(C2)',N,D,ns,ds,fp,var)
+                        
+                    with d2:
+                        
+                        st.write("S(C7):")
+                        C7s=1.01*C7
+                        wps=m.sqrt(R3/(R1*R4*R5*C2*C7s))
+                        qprs=wps*C7s*R8
+                        wzrhpns=wps*m.sqrt(1-(R1*R4)/(R3*R8))
+                        fprs=wps/(2*m.pi)
+                        fzrs=wzrhpns/(2*m.pi)
+                        ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
+                        draw_sensi('S(C7)',N,D,ns,ds,fp,var)
+
+
+                    
+                    st.header("Analyse de sensibilité des résistances")
+                    sensi=st.expander('Afficher la sensibilité')
+                    d1,d2,d3=sensi.columns([1,1,1])
+                    var=1
+                    with d2:
                         
                         st.write("S(R3):")
                         R3s=1.01*R3
@@ -1637,23 +1935,7 @@ def filter(p):
                         ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
                         draw_sensi('S(R8)',N,D,ns,ds,fp,var)
                         
-                    with d2:
-                        st.write("S(Wp):")
-                        fprs=fp*1.01
-                        qprs=qp
-                        fzrs=fz
-                        ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
-                        draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
-                        
-                        st.write("S(C7):")
-                        C7s=1.01*C7
-                        wps=m.sqrt(R3/(R1*R4*R5*C2*C7s))
-                        qprs=wps*C7s*R8
-                        wzrhpns=wps*m.sqrt(1-(R1*R4)/(R3*R8))
-                        fprs=wps/(2*m.pi)
-                        fzrs=wzrhpns/(2*m.pi)
-                        ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
-                        draw_sensi('S(C7)',N,D,ns,ds,fp,var)
+                    with d3:
                         
                         st.write("S(R4):")
                         R4s=1.01*R4
@@ -1665,13 +1947,7 @@ def filter(p):
                         ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
                         draw_sensi('S(R4)',N,D,ns,ds,fp,var)
                         
-                    with d3:
-                        st.write("S(Wz):")
-                        fzrs=fz*1.01
-                        qprs=qp
-                        fprs=fp
-                        ns,ds=getBR_ND(fprs, qprs, 1, fzrs)
-                        draw_sensi('S(Wz)',N,D,ns,ds,fp,var)
+                    with d1:
                         
                         st.write("S(R1):")
                         R1s=1.01*R1
@@ -1727,13 +2003,13 @@ def filter(p):
                 K3r=R8m/(R7m*R3m*R5m*C9m*C10m)
                 N,D=getLPTT_ND(fp, qp, K3)
                 n,d=getLPTT_ND(fpr, qpr, K3r)
-                Aff(N, D,n,d,p)
-                data=[fp,qp,R1m,R2m,R3m,R5m,R7m,R8m,C9m,C10m]
+                plot=Aff(N, D,n,d,p)
+                data=[fpr,qpr,R1m,R2m,R3m,R5m,R7m,R8m,C9m,C10m]
                 name=['fp','Qp','R1','R2','R3','R5','R7','R8','C9','C10']
                 
-                st.header("Analyse de sensibilité")
+                st.header("Analyse de sensibilité de Wp et Qp")
                 sensi=st.expander('Afficher la sensibilité')
-                d1,d2,d3=sensi.columns([1,1,1])
+                d1,d2=sensi.columns([1,1])
                 var=1
                 with d1:
                     st.write("S(Qp):") 
@@ -1742,6 +2018,19 @@ def filter(p):
                     ns,ds=getLPTT_ND(fprs, qprs, K3)
                     draw_sensi('S(Qp)',N,D,ns,ds,fp,var)
                     
+                with d2:
+                    st.write("S(Wp):")
+                    fprs=fp*1.01
+                    qprs=qp
+                    ns,ds=getLPTT_ND(fprs, qprs, K3)
+                    draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+                
+                st.header("Analyse de sensibilité des capacités")
+                sensi=st.expander('Afficher la sensibilité')
+                d1,d2=sensi.columns([1,1])
+                var=1
+                with d2:
+                    
                     st.write("S(C10):")
                     C10s=1.01*C10
                     fprs=(m.sqrt(R8/(R2*R3*R7*C9*C10s)))/(2*m.pi)
@@ -1749,6 +2038,22 @@ def filter(p):
                     K3s=R8/(R7*R3*R5*C9*C10s)
                     ns,ds=getLPTT_ND(fprs, qprs, K3s)
                     draw_sensi('S(C10)',N,D,ns,ds,fp,var)
+                    
+                with d1:
+                    
+                    st.write("S(C9):")
+                    C9s=1.01*C9
+                    fprs=(m.sqrt(R8/(R2*R3*R7*C9s*C10)))/(2*m.pi)
+                    qprs=R1*m.sqrt(R8*C9s/(R2*R3*R7*C10))
+                    K3s=R8/(R7*R3*R5*C9s*C10)
+                    ns,ds=getLPTT_ND(fprs, qprs, K3s)
+                    draw_sensi('S(C9)',N,D,ns,ds,fp,var)
+                
+                st.header("Analyse de sensibilité des résistances")
+                sensi=st.expander('Afficher la sensibilité')
+                d1,d2,d3=sensi.columns([1,1,1])
+                var=1
+                with d3:
                     
                     st.write("S(R3):")
                     R3s=1.01*R3
@@ -1766,12 +2071,7 @@ def filter(p):
                     ns,ds=getLPTT_ND(fprs, qprs, K3s)
                     draw_sensi('S(R6)',N,D,ns,ds,fp,var)
                     
-                with d2:
-                    st.write("S(Wp):")
-                    fprs=fp*1.01
-                    qprs=qp
-                    ns,ds=getLPTT_ND(fprs, qprs, K3)
-                    draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+                with d1:
                     
                     st.write("S(R1):")
                     R1s=1.01*R1
@@ -1797,14 +2097,7 @@ def filter(p):
                     ns,ds=getLPTT_ND(fprs, qprs, K3s)
                     draw_sensi('S(R7)',N,D,ns,ds,fp,var)
                     
-                with d3:
-                    st.write("S(C9):")
-                    C9s=1.01*C9
-                    fprs=(m.sqrt(R8/(R2*R3*R7*C9s*C10)))/(2*m.pi)
-                    qprs=R1*m.sqrt(R8*C9s/(R2*R3*R7*C10))
-                    K3s=R8/(R7*R3*R5*C9s*C10)
-                    ns,ds=getLPTT_ND(fprs, qprs, K3s)
-                    draw_sensi('S(C9)',N,D,ns,ds,fp,var)
+                with d2:
                     
                     st.write("S(R2):")
                     R2s=1.01*R2
@@ -1853,13 +2146,13 @@ def filter(p):
                 K1r=-R8m/R6m
                 N,D=getHPTT_ND(fp, qp, K1)
                 n,d=getHPTT_ND(fpr, qpr, K1r)
-                Aff(N, D,n,d,p)
-                data=[fp,qp,R1m,R2m,R3m,R6m,R7m,R8m,C9m,C10m]
+                plot=Aff(N, D,n,d,p)
+                data=[fpr,qpr,R1m,R2m,R3m,R6m,R7m,R8m,C9m,C10m]
                 name=['R1','R2','R3','R6','R7','R8','C9','C10']
                 
-                st.header("Analyse de sensibilité")
+                st.header("Analyse de sensibilité de Wp et Qp")
                 sensi=st.expander('Afficher la sensibilité')
-                d1,d2,d3=sensi.columns([1,1,1])
+                d1,d2=sensi.columns([1,1])
                 var=1
                 with d1:
                     st.write("S(Qp):") 
@@ -1868,6 +2161,20 @@ def filter(p):
                     ns,ds=getHPTT_ND(fprs, qprs, K1)
                     draw_sensi('S(Qp)',N,D,ns,ds,fp,var)
                     
+                with d2:
+                    st.write("S(Wp):")
+                    fprs=fp*1.01
+                    qprs=qp
+                    ns,ds=getHPTT_ND(fprs, qprs, K1)
+                    draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+
+                
+                st.header("Analyse de sensibilité des capacités")
+                sensi=st.expander('Afficher la sensibilité')
+                d1,d2=sensi.columns([1,1])
+                var=1
+                with d2:
+                    
                     st.write("S(C10):")
                     C10s=1.01*C10
                     fprs=(m.sqrt(R8/(R2*R3*R7*C9*C10s)))/(2*m.pi)
@@ -1875,6 +2182,21 @@ def filter(p):
                     K1s=-R8/R6
                     ns,ds=getHPTT_ND(fprs, qprs, K1s)
                     draw_sensi('S(C10)',N,D,ns,ds,fp,var)
+                    
+                with d1:
+                    st.write("S(C9):")
+                    C9s=1.01*C9
+                    fprs=(m.sqrt(R8/(R2*R3*R7*C9s*C10)))/(2*m.pi)
+                    qprs=R1*m.sqrt(R8*C9s/(R2*R3*R7*C10))
+                    K1s=-R8/R6
+                    ns,ds=getHPTT_ND(fprs, qprs, K1s)
+                    draw_sensi('S(C9)',N,D,ns,ds,fp,var)
+                
+                st.header("Analyse de sensibilité des résistances")
+                sensi=st.expander('Afficher la sensibilité')
+                d1,d2,d3=sensi.columns([1,1,1])
+                var=1
+                with d3:
                     
                     st.write("S(R3):")
                     R3s=1.01*R3
@@ -1892,12 +2214,7 @@ def filter(p):
                     ns,ds=getHPTT_ND(fprs, qprs, K1s)
                     draw_sensi('S(R6)',N,D,ns,ds,fp,var)
                     
-                with d2:
-                    st.write("S(Wp):")
-                    fprs=fp*1.01
-                    qprs=qp
-                    ns,ds=getHPTT_ND(fprs, qprs, K1)
-                    draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+                with d1:
                     
                     st.write("S(R1):")
                     R1s=1.01*R1
@@ -1923,14 +2240,7 @@ def filter(p):
                     ns,ds=getHPTT_ND(fprs, qprs, K1s)
                     draw_sensi('S(R7)',N,D,ns,ds,fp,var)
                     
-                with d3:
-                    st.write("S(C9):")
-                    C9s=1.01*C9
-                    fprs=(m.sqrt(R8/(R2*R3*R7*C9s*C10)))/(2*m.pi)
-                    qprs=R1*m.sqrt(R8*C9s/(R2*R3*R7*C10))
-                    K1s=-R8/R6
-                    ns,ds=getHPTT_ND(fprs, qprs, K1s)
-                    draw_sensi('S(C9)',N,D,ns,ds,fp,var)
+                with d2:
                     
                     st.write("S(R2):")
                     R2s=1.01*R2
@@ -1980,13 +2290,13 @@ def filter(p):
                 K2r=R8m/(C9m*R7m*R4m)
                 N,D=getBPTT_ND(fp, qp, K2)
                 n,d=getBPTT_ND(fpr, qpr, K2r)
-                Aff(N, D,n,d,p)
-                data=[fp,qp,R1m,R2m,R3m,R4m,R7m,R8m,C9m,C10m]
+                plot=Aff(N, D,n,d,p)
+                data=[fpr,qpr,R1m,R2m,R3m,R4m,R7m,R8m,C9m,C10m]
                 name=['fp','Qp','R1','R2','R3','R4','R7','R8','C9','C10']
                 
-                st.header("Analyse de sensibilité")
+                st.header("Analyse de sensibilité de Wp et Qp")
                 sensi=st.expander('Afficher la sensibilité')
-                d1,d2,d3=sensi.columns([1,1,1])
+                d1,d2=sensi.columns([1,1])
                 var=1
                 with d1:
                     st.write("S(Qp):") 
@@ -1995,6 +2305,20 @@ def filter(p):
                     ns,ds=getBPTT_ND(fprs, qprs, K2)
                     draw_sensi('S(Qp)',N,D,ns,ds,fp,var)
                     
+                with d2:
+                    st.write("S(Wp):")
+                    fprs=fp*1.01
+                    qprs=qp
+                    ns,ds=getBPTT_ND(fprs, qprs, K2)
+                    draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+
+                
+                st.header("Analyse de sensibilité des capacités")
+                sensi=st.expander('Afficher la sensibilité')
+                d1,d2=sensi.columns([1,1])
+                var=1
+                with d2:
+                    
                     st.write("S(C10):")
                     C10s=1.01*C10
                     fprs=(m.sqrt(R8/(R2*R3*R7*C9*C10s)))/(2*m.pi)
@@ -2002,6 +2326,21 @@ def filter(p):
                     K2s=R8/(C9*R7*R4)
                     ns,ds=getBPTT_ND(fprs, qprs, K2s)
                     draw_sensi('S(C10)',N,D,ns,ds,fp,var)
+                    
+                with d1:
+                    st.write("S(C9):")
+                    C9s=1.01*C9
+                    fprs=(m.sqrt(R8/(R2*R3*R7*C9s*C10)))/(2*m.pi)
+                    qprs=R1*m.sqrt(R8*C9s/(R2*R3*R7*C10))
+                    K2s=R8/(C9s*R7*R4)
+                    ns,ds=getBPTT_ND(fprs, qprs, K2s)
+                    draw_sensi('S(C9)',N,D,ns,ds,fp,var)
+                
+                st.header("Analyse de sensibilité des résistances")
+                sensi=st.expander('Afficher la sensibilité')
+                d1,d2,d3=sensi.columns([1,1,1])
+                var=1
+                with d3:
                     
                     st.write("S(R3):")
                     R3s=1.01*R3
@@ -2019,12 +2358,7 @@ def filter(p):
                     ns,ds=getBPTT_ND(fprs, qprs, K2s)
                     draw_sensi('S(R6)',N,D,ns,ds,fp,var)
                     
-                with d2:
-                    st.write("S(Wp):")
-                    fprs=fp*1.01
-                    qprs=qp
-                    ns,ds=getBPTT_ND(fprs, qprs, K2)
-                    draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+                with d1:
                     
                     st.write("S(R1):")
                     R1s=1.01*R1
@@ -2050,14 +2384,7 @@ def filter(p):
                     ns,ds=getBPTT_ND(fprs, qprs, K2s)
                     draw_sensi('S(R7)',N,D,ns,ds,fp,var)
                     
-                with d3:
-                    st.write("S(C9):")
-                    C9s=1.01*C9
-                    fprs=(m.sqrt(R8/(R2*R3*R7*C9s*C10)))/(2*m.pi)
-                    qprs=R1*m.sqrt(R8*C9s/(R2*R3*R7*C10))
-                    K2s=R8/(C9s*R7*R4)
-                    ns,ds=getBPTT_ND(fprs, qprs, K2s)
-                    draw_sensi('S(C9)',N,D,ns,ds,fp,var)
+                with d2:
                     
                     st.write("S(R2):")
                     R2s=1.01*R2
@@ -2111,11 +2438,11 @@ def filter(p):
                     Kr=-R8m/R6m
                     N,D=getBRTT_ND(fp, qp, K,fz)
                     n,d=getBRTT_ND(fpr, qpr, Kr,fzr)
-                    Aff(N, D,n,d,p)
-                    data=[fz,fp,qp,R1m,R2m,R3m,R4m,R5m,R6m,R7m,R8m,C9m,C10m]
+                    plot=Aff(N, D,n,d,p)
+                    data=[fzr,fpr,qpr,R1m,R2m,R3m,R4m,R5m,R6m,R7m,R8m,C9m,C10m]
                     name=['fz','fp','Qp','R1','R2','R3','R4','R5','R6','R7','R8','C9','C10']
                     
-                    st.header("Analyse de sensibilité")
+                    st.header("Analyse de sensibilité de Wp, Wz et Qp")
                     sensi=st.expander('Afficher la sensibilité')
                     d1,d2,d3=sensi.columns([1,1,1])
                     var=1
@@ -2127,6 +2454,32 @@ def filter(p):
                         fzrs=fz
                         ns,ds=getBRTT_ND(fprs, qprs, Ks,fzrs)
                         draw_sensi('S(Qp)',N,D,ns,ds,fp,var)
+
+                        
+                    with d2:
+                        st.write("S(Wp):")
+                        fprs=fp*1.01
+                        qprs=qp
+                        Ks=K
+                        fzrs=fz
+                        ns,ds=getBRTT_ND(fprs, qprs, Ks,fzrs)
+                        draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+                        
+                    with d3:
+                                                
+                        st.write("S(Wz):")
+                        fprs=fp
+                        qprs=qp
+                        Ks=K
+                        fzrs=fz*1.01
+                        ns,ds=getBRTT_ND(fprs, qprs, Ks,fzrs)
+                        draw_sensi('S(Wz)',N,D,ns,ds,fp,var)
+                    
+                    st.header("Analyse de sensibilité des capacités")
+                    sensi=st.expander('Afficher la sensibilité')
+                    d1,d2=sensi.columns([1,1])
+                    var=1
+                    with d2:
                         
                         st.write("S(C10):")
                         C10s=1.01*C10
@@ -2136,6 +2489,23 @@ def filter(p):
                         Ks=-R8/R6
                         ns,ds=getBRTT_ND(fprs, qprs, Ks,fzrs)
                         draw_sensi('S(C10)',N,D,ns,ds,fp,var)
+                        
+                    with d1:
+                        st.write("S(C9):")
+                        C9s=1.01*C9
+                        fprs=(m.sqrt(R8/(R2*R3*R7*C9s*C10)))/(2*m.pi)
+                        qprs=R1*m.sqrt(R8*C9s/(R2*R3*R7*C10))
+                        fzrs=(m.sqrt(R6/(R3*R5*R7*C9s*C10)))/(2*m.pi)
+                        Ks=-R8/R6
+                        ns,ds=getBRTT_ND(fprs, qprs, Ks,fzrs)
+                        draw_sensi('S(C9)',N,D,ns,ds,fp,var)
+                    
+                    st.header("Analyse de sensibilité des résistances")
+                    sensi=st.expander('Afficher la sensibilité')
+                    d1,d2,d3=sensi.columns([1,1,1])
+                    var=1
+                    with d3:
+                        
                         
                         st.write("S(R3):")
                         R3s=1.01*R3
@@ -2155,22 +2525,7 @@ def filter(p):
                         ns,ds=getBRTT_ND(fprs, qprs, Ks,fzrs)
                         draw_sensi('S(R6)',N,D,ns,ds,fp,var)
                         
-                        st.write("S(Wz):")
-                        fprs=fp
-                        qprs=qp
-                        Ks=K
-                        fzrs=fz*1.01
-                        ns,ds=getBRTT_ND(fprs, qprs, Ks,fzrs)
-                        draw_sensi('S(Wz)',N,D,ns,ds,fp,var)
-                        
-                    with d2:
-                        st.write("S(Wp):")
-                        fprs=fp*1.01
-                        qprs=qp
-                        Ks=K
-                        fzrs=fz
-                        ns,ds=getBRTT_ND(fprs, qprs, Ks,fzrs)
-                        draw_sensi('S(Wp)',N,D,ns,ds,fp,var)
+                    with d1:
                         
                         st.write("S(R1):")
                         R1s=1.01*R1
@@ -2199,15 +2554,7 @@ def filter(p):
                         ns,ds=getBRTT_ND(fprs, qprs, Ks,fzrs)
                         draw_sensi('S(R7)',N,D,ns,ds,fp,var)
                         
-                    with d3:
-                        st.write("S(C9):")
-                        C9s=1.01*C9
-                        fprs=(m.sqrt(R8/(R2*R3*R7*C9s*C10)))/(2*m.pi)
-                        qprs=R1*m.sqrt(R8*C9s/(R2*R3*R7*C10))
-                        fzrs=(m.sqrt(R6/(R3*R5*R7*C9s*C10)))/(2*m.pi)
-                        Ks=-R8/R6
-                        ns,ds=getBRTT_ND(fprs, qprs, Ks,fzrs)
-                        draw_sensi('S(C9)',N,D,ns,ds,fp,var)
+                    with d2:
                         
                         st.write("S(R2):")
                         R2s=1.01*R2
@@ -2236,4 +2583,4 @@ def filter(p):
                         ns,ds=getBRTT_ND(fprs, qprs, Ks,fzrs)
                         draw_sensi('S(R8)',N,D,ns,ds,fp,var) 
                         
-    return sel,image,name,data
+    return sel,image,name,data,plot
