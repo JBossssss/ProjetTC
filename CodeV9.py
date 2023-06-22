@@ -591,7 +591,7 @@ def filter(p):
                         st.write('- Augmenter la valeur de C1 ou C2')
                         
                     else :    
-                        [R5m,R6m,R7m,R8m,R9m,R10m,C1m,C2m,C3m,C4m,Km,GSPm]=Result(['R5','R6','R7','R8','R9','C1','C2','C3','C4','R10','K','GSP'], [R5,R6,R7,R8,R9,R10,C1,C2,C3,C4,K,GSP],p+60)
+                        [R5m,R6m,R7m,R8m,R9m,R10m,C1m,C2m,C3m,C4m,Km,GSPm]=Result(['R5','R6','R7','R8','R9','R10','C1','C2','C3','C4','K','GSP'], [R5,R6,R7,R8,R9,R10,C1,C2,C3,C4,K,GSP],p+60)
                         [C1m,C2m,C3m,C4m,R9m],[R5m,R6m,R7m,R8m,R10m]=standardisation(['C1','C2','C3','C4','R9'],  [C1m,C2m,C3m,C4m,R9m], ['R5','R6','R7','R8','R10'], [R5m,R6m,R7m,R8m,R10m],p+60)
                         CSm=(C1m*C2m)/(C1m+C2m)
                         RSm=R5m+R6m
