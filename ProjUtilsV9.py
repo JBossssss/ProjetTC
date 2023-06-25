@@ -157,13 +157,13 @@ def Aff(N,D,n,d,p):
     G1,G2=st.columns([1,1])
     with G1: 
         st.subheader('Théorique')
-        st.write('fp = ',m.sqrt(D[2]))
-        st.write('Qp = ',m.sqrt(D[2])*D[1])
+        st.write('fp = ',m.sqrt(D[2])/(2*m.pi))
+        st.write('Qp = ',m.sqrt(D[2])/D[1])
         Write_fnT(N, D)
     with G2: 
         st.subheader('Réelle')
-        st.write('fp = ',m.sqrt(d[2]))
-        st.write('Qp = ',m.sqrt(d[2])*d[1])
+        st.write('fp = ',m.sqrt(d[2])/(2*m.pi))
+        st.write('Qp = ',m.sqrt(d[2])/d[1])
         Write_fnT(n,d)    
     z=G1.slider('Zoom (base 10)',0.0,5.0,2.0,key=p)
     w1=m.log10(m.sqrt(D[2]))+z+0.1
